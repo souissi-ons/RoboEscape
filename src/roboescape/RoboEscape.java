@@ -1,32 +1,28 @@
-
 package roboescape;
+
 import javafx.application.Application;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+import roboescape.view.GameView;
 
 public class RoboEscape extends Application {
 
-
     @Override
-public void start(Stage primaryStage) {
-    primaryStage.setTitle("RoboEscape");
+    public void start(Stage stage) {
 
-    StackPane root = new StackPane();
-        Label test = new Label("JavaFX fonctionne !");
-    test.setStyle("-fx-font-size: 32px; -fx-text-fill: blue;");
+        GameView view = new GameView();
 
-    root.getChildren().add(test);
+        Scene scene = new Scene(view, 800, 600);
 
-    Scene scene = new Scene(root, 900, 600);
-    primaryStage.setScene(scene);
-    primaryStage.show();
-}
+        scene.setOnKeyPressed(e -> view.getController().onKeyPressed(e.getCode()));
+        scene.setOnKeyReleased(e -> view.getController().onKeyReleased(e.getCode()));
 
+        stage.setScene(scene);
+        stage.setTitle("RoboEscape");
+        stage.show();
+    }
 
     public static void main(String[] args) {
-        launch(args);
+        launch();
     }
-    
 }
