@@ -1,4 +1,4 @@
-package roboescape.model.level;
+package roboescape.patterns.composite;
 
 import java.util.ArrayList;
 import java.util.List;

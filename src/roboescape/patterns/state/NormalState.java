@@ -1,4 +1,6 @@
-package roboescape.model.player;
+package roboescape.patterns.state;
+
+import roboescape.model.player.Player;
 
 public class NormalState implements PlayerState {
 

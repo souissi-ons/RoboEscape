@@ -1,4 +1,4 @@
-package roboescape.model.player;
+package roboescape.patterns.state;
 
 public interface PlayerState {
     void update();

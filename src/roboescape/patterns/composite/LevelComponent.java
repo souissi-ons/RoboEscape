@@ -1,4 +1,4 @@
-package roboescape.model.level;
+package roboescape.patterns.composite;
 
 public interface LevelComponent {
     void render();

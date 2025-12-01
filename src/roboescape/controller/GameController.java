@@ -2,7 +2,10 @@ package roboescape.controller;
 
 import javafx.scene.input.KeyCode;
 import roboescape.model.player.Player;
-import roboescape.model.player.PoweredUpState;
+
+import roboescape.patterns.state.PoweredUpState;
+import roboescape.patterns.decorator.SpeedBoost;
+import roboescape.patterns.decorator.ShieldBoost;
 
 public class GameController {
 
@@ -14,7 +17,6 @@ public class GameController {
     }
 
     public void update(double width, double height) {
-
         double dx = 0;
         double dy = 0;
 
@@ -29,12 +31,15 @@ public class GameController {
 
     public void onKeyPressed(KeyCode code) {
         switch (code) {
+
             case UP -> up = true;
             case DOWN -> down = true;
             case LEFT -> left = true;
             case RIGHT -> right = true;
 
-            case SPACE -> player.setState(new PoweredUpState(player));
+            case SPACE -> player.setCurrentState(new PoweredUpState(player)); // STATE PATTERN
+            case S -> player.addPowerUp(new SpeedBoost()); // DECORATOR
+            case D -> player.addPowerUp(new ShieldBoost());
         }
     }
 
