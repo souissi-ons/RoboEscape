@@ -1,5 +1,5 @@
 package roboescape.model.player;
 
 public interface PlayerState {
-    void move();
+    void update();
 }
