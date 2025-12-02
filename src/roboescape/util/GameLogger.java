@@ -45,4 +45,5 @@ public class GameLogger {
             writer.flush();
         }
     }
-}
+} 
+// FIN DE LA CLASSE GameLogger

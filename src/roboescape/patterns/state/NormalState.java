@@ -1,5 +1,6 @@
 package roboescape.patterns.state;
 
+import javafx.scene.paint.Color;
 import roboescape.model.player.Player;
 
 public class NormalState implements PlayerState {
@@ -13,6 +14,16 @@ public class NormalState implements PlayerState {
 
     @Override
     public void update() {
-        // Rien de spécial ici
+        // Logique normale
+    }
+
+    @Override
+    public void onEnter() {
+        // Logique d'entrée (ex: jouer un son)
+    }
+
+    @Override
+    public Color getColor() {
+        return Color.DODGERBLUE; // Retourne la couleur bleue
     }
 }
