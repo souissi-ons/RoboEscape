@@ -8,10 +8,9 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import roboescape.controller.GameController;
-import roboescape.model.enemy.Enemy;
 import roboescape.model.player.Player;
 import roboescape.patterns.composite.Level;
-import roboescape.patterns.composite.Wall;
+import roboescape.patterns.factory.LevelFactory;
 
 public class GameView extends StackPane {
 
@@ -21,54 +20,47 @@ public class GameView extends StackPane {
     private final GameController controller;
     private Level level;
 
+    // --- GESTION DES NIVEAUX ---
+    private int currentLevelIndex = 1;
+    private boolean gameFinished = false;
+
     public GameView() {
+        // Initialisation du Canvas (Zone de dessin)
         this.canvas = new Canvas(800, 600);
         this.gc = canvas.getGraphicsContext2D();
 
+        // Création du joueur et du contrôleur
         this.player = new Player();
         this.controller = new GameController(player);
 
         this.getChildren().add(canvas);
+        
+        // CHARGER LE PREMIER NIVEAU (Level 1)
+        loadLevel(currentLevelIndex);
 
-        // --- INITIALISATION DU NIVEAU ---
-        initLevel();
-
+        // Lancer la boucle de jeu
         startGameLoop();
     }
 
-    private void initLevel() {
-        level = new Level();
-        controller.setLevel(level);
-
-        // 1. Cadre extérieur (Loin du centre)
-        level.addWall(new Wall(0, 0, 800, 20));
-        level.addWall(new Wall(0, 580, 800, 20));
-        level.addWall(new Wall(0, 0, 20, 600));
-        level.addWall(new Wall(780, 0, 20, 600));
-
-        // 2. Obstacles (ON LAISSE LE CENTRE 400,300 VIDE !)
+    /**
+     * Charge un niveau spécifique via la Factory
+     */
+    private void loadLevel(int index) {
+        // Appel à la Factory pour créer le niveau demandé
+        Level newLevel = LevelFactory.createLevel(index);
         
-        // Mur à gauche
-        level.addWall(new Wall(100, 100, 20, 400)); 
-        
-        // Mur à droite
-        level.addWall(new Wall(680, 100, 20, 400));
-        
-        // Îlots (mais pas au centre)
-        level.addWall(new Wall(250, 150, 100, 50));
-        level.addWall(new Wall(250, 400, 100, 50));
-        level.addWall(new Wall(450, 150, 100, 50));
-        level.addWall(new Wall(450, 400, 100, 50));
-
-        // --- Items & Ennemis ---
-        level.addItem(new roboescape.model.items.CoinItem(400, 100)); // Haut
-        level.addItem(new roboescape.model.items.CoinItem(400, 500)); // Bas
-
-        // Ennemi qui tourne autour du centre
-        level.addEnemy(new roboescape.model.enemy.Enemy(200, 300, 
-            new roboescape.patterns.strategy.VerticalPatrolStrategy(200, 400)));
-
-        level.setExit(new roboescape.patterns.composite.Exit(720, 300, 50));
+        if (newLevel != null) {
+            // Si le niveau existe, on le charge
+            this.level = newLevel;
+            controller.setLevel(level); // IMPORTANT : Lier le nouveau niveau au contrôleur pour les collisions
+            player.resetPosition();     // Remettre le joueur au départ (et reset l'état de victoire)
+            System.out.println("Niveau " + index + " chargé !");
+        } else {
+            // Si la Factory renvoie null, c'est qu'il n'y a plus de niveaux
+            gameFinished = true;
+            player.setWon(true); // On laisse le statut "Gagné" pour bloquer les mouvements
+            System.out.println("Tous les niveaux sont terminés !");
+        }
     }
 
     public GameController getController() {
@@ -79,23 +71,32 @@ public class GameView extends StackPane {
         AnimationTimer timer = new AnimationTimer() {
             @Override
             public void handle(long now) {
-                // A. EFFACER / FOND
+                // 1. GESTION TRANSITION NIVEAUX
+                // Si le joueur a gagné le niveau actuel et que le jeu n'est pas totalement fini
+                if (player.hasWon() && !gameFinished) {
+                    currentLevelIndex++; // On passe au niveau suivant
+                    loadLevel(currentLevelIndex);
+                    return; // On saute une frame pour charger proprement
+                }
+
+                // 2. EFFACER L'ÉCRAN (Fond Gris Foncé)
                 gc.setFill(Color.rgb(30, 30, 35));
                 gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
-                // B. DESSINER NIVEAU (Murs + Items + Ennemis)
-                level.update();
-                level.render(gc);
-
-                // C. DESSINER JOUEUR (si vivant)
-                if (player.isAlive()) {
-                    controller.update(canvas.getWidth(), canvas.getHeight());
-                    player.render(gc);
-                } else {
-                    // Si mort, on dessine juste le cadavre (optionnel) ou rien
+                // 3. MISE À JOUR ET DESSIN DU NIVEAU
+                if (level != null) {
+                    level.update();
+                    level.render(gc);
                 }
 
-                // D. INTERFACE (HUD)
+                // 4. MISE À JOUR ET DESSIN DU JOUEUR
+                // On met à jour le joueur seulement s'il est vivant ou si le jeu est fini (pour l'affichage)
+                if (player.isAlive() || gameFinished) {
+                    controller.update(canvas.getWidth(), canvas.getHeight());
+                    player.render(gc);
+                }
+                
+                // 5. INTERFACE UTILISATEUR (HUD)
                 drawHUD();
             }
         };
@@ -103,57 +104,65 @@ public class GameView extends StackPane {
     }
 
     private void drawHUD() {
-        // Fond semi-transparent
+        // Fond semi-transparent en haut à gauche pour les stats
         gc.setFill(Color.rgb(0, 0, 0, 0.6));
-        gc.fillRect(10, 10, 180, 90);
+        gc.fillRect(10, 10, 200, 100);
 
-        gc.setFont(Font.font("Arial", FontWeight.BOLD, 14));
-
-        // 1. Vitesse
+        // --- AFFICHAGE DES STATS ---
         gc.setFill(Color.WHITE);
+        
+        // Afficher le niveau actuel en haut à droite
+        gc.setFont(Font.font("Arial", FontWeight.BOLD, 16));
+        gc.fillText("LEVEL " + currentLevelIndex, 700, 30);
+        
+        // Vitesse
+        gc.setFont(Font.font("Arial", 14));
         gc.fillText("Vitesse: " + String.format("%.1f", player.getSpeed()), 20, 30);
-
-        // 2. Bouclier
+        
+        // Bouclier
         if (player.hasShield()) {
             gc.setFill(Color.CYAN);
-            gc.fillText("BOUCLIER ACTIF", 20, 50);
+            gc.fillText("BOUCLIER: ACTIF", 20, 50);
         } else {
             gc.setFill(Color.GRAY);
             gc.fillText("Bouclier: Non", 20, 50);
         }
 
-        // 3. Vie (Rouge)
+        // Vie (Rouge)
         gc.setFill(Color.rgb(255, 80, 80));
         gc.fillText("Vie: " + player.getHealth(), 20, 70);
 
-        // 4. Score (Jaune)
+        // Score (Or)
         gc.setFill(Color.GOLD);
         gc.fillText("Score: " + player.getScore(), 20, 90);
 
-        // 5. ECRAN GAME OVER
+        // --- GESTION DES ÉCRANS DE FIN (Game Over / Victoire) ---
+        
+        // Cas 1 : GAME OVER
         if (!player.isAlive()) {
-            gc.setFill(Color.rgb(0, 0, 0, 0.7)); // Voile noir
-            gc.fillRect(0, 0, 800, 600);
-
-            gc.setFill(Color.RED);
-            gc.setFont(Font.font("Verdana", FontWeight.BOLD, 60));
-            gc.fillText("GAME OVER", 200, 300);
-
-            gc.setFill(Color.WHITE);
-            gc.setFont(Font.font("Arial", 20));
-            gc.fillText("Score Final : " + player.getScore(), 320, 350);
-        } else if (player.hasWon()) { // <--- NOUVEAU
-            // Fond vert semi-transparent
-            gc.setFill(Color.rgb(0, 100, 0, 0.8));
-            gc.fillRect(0, 0, 800, 600);
-
-            gc.setFill(Color.WHITE);
-            gc.setFont(Font.font("Verdana", FontWeight.BOLD, 60));
-            gc.fillText("VICTOIRE !", 230, 300);
-
-            gc.setFont(Font.font("Arial", 20));
-            gc.fillText("Score Final : " + player.getScore(), 320, 350);
-            gc.fillText("Bravo Robot !", 340, 380);
+            drawFullScreenMessage(Color.RED, "GAME OVER", "Score Final: " + player.getScore());
+        } 
+        // Cas 2 : VICTOIRE TOTALE (Tous les niveaux finis)
+        else if (gameFinished) {
+            drawFullScreenMessage(Color.LIMEGREEN, "VICTOIRE TOTALE !", "Score Final: " + player.getScore());
         }
+    }
+
+    // Méthode utilitaire pour afficher les messages plein écran
+    private void drawFullScreenMessage(Color color, String title, String subtitle) {
+        // Voile noir transparent sur tout l'écran
+        gc.setFill(Color.rgb(0, 0, 0, 0.8));
+        gc.fillRect(0, 0, 800, 600);
+        
+        // Titre
+        gc.setFill(color);
+        gc.setFont(Font.font("Verdana", FontWeight.BOLD, 50));
+        // Centrage approximatif
+        gc.fillText(title, 200, 300);
+        
+        // Sous-titre
+        gc.setFill(Color.WHITE);
+        gc.setFont(Font.font("Arial", 20));
+        gc.fillText(subtitle, 320, 350);
     }
 }

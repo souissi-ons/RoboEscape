@@ -15,28 +15,25 @@ public class Wall implements LevelComponent {
 
     @Override
     public void render(GraphicsContext gc) {
-        // Dessin style "Brique" ou Métal
         gc.setFill(Color.DARKGRAY);
         gc.fillRect(x, y, width, height);
-        
-        // Bordure pour l'effet 3D
         gc.setStroke(Color.BLACK);
         gc.setLineWidth(2);
         gc.strokeRect(x, y, width, height);
     }
 
     @Override
-    public void update() {
-        // Les murs ne bougent pas
-    }
+    public void update() {}
 
-    // Pour la détection de collision
-    // Dans Wall.java
-public boolean intersects(double px, double py, double pSize) {
-    // AABB Collision (Axis-Aligned Bounding Box)
-    return px < x + width &&        // Le côté gauche du joueur est à gauche du côté droit du mur
-           px + pSize > x &&        // Le côté droit du joueur est à droite du côté gauche du mur
-           py < y + height &&       // Le haut du joueur est au-dessus du bas du mur
-           py + pSize > y;          // Le bas du joueur est en dessous du haut du mur
-}
+    // Getters essentiels pour la physique
+    public double getX() { return x; }
+    public double getY() { return y; }
+    public double getWidth() { return width; }
+    public double getHeight() { return height; }
+    
+    // Ancienne méthode (gardée pour compatibilité)
+    public boolean intersects(double px, double py, double pSize) {
+        return px < x + width && px + pSize > x &&
+               py < y + height && py + pSize > y;
+    }
 }
