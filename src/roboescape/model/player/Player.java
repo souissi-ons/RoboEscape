@@ -13,14 +13,14 @@ public class Player {
 
     // --- POSITION & TAILLE ---
     // On démarre au CENTRE (400, 300) pour être sûr de ne pas être dans un mur
-    private double x = 400; 
+    private double x = 400;
     private double y = 300;
-    
+
     private double size = 40; // Taille de l'image (visuel)
-    
+
     // --- HITBOX (PHYSIQUE) ---
     // On met une hitbox TRES petite (20px) pour être très agile
-    private double hitboxSize = 20; 
+    private double hitboxSize = 28;
     private double hitboxOffset = (size - hitboxSize) / 2; // = 10px de marge
 
     // --- GAMEPLAY ---
@@ -29,7 +29,7 @@ public class Player {
     private int score = 0;
     private boolean shield = false;
     private boolean won = false;
-    
+
     private boolean invulnerable = false;
     private long lastDamageTime = 0;
 
@@ -41,12 +41,15 @@ public class Player {
         this.currentState = new NormalState(this);
         try {
             this.robotSprite = new Image("https://img.icons8.com/fluency/48/robot-2.png", true);
-        } catch (Exception e) {}
+        } catch (Exception e) {
+        }
     }
 
+    // Dans Player.java
     public void render(GraphicsContext gc) {
-        if (!isAlive()) return;
-
+        if (!isAlive()) {
+            return; // Ne rien dessiner si mort
+        }
         // 1. DESSINER LE ROBOT (IMAGE)
         if (robotSprite != null && !robotSprite.isError()) {
             gc.drawImage(robotSprite, x, y, size, size);
@@ -55,13 +58,24 @@ public class Player {
             gc.fillRect(x, y, size, size);
         }
 
-        // 2. DEBUG : DESSINER LA HITBOX (LE CARRÉ ROUGE)
-        // C'est ce carré qui ne doit pas toucher les murs !
+        // 2. EFFET DÉGÂTS (Clignotement Rouge)
+        // Si le joueur est invulnérable (vient de perdre une vie)
+        if (invulnerable) {
+            // Clignotement rapide (tous les 100ms)
+            if (System.currentTimeMillis() % 200 < 100) {
+                gc.setFill(Color.rgb(255, 0, 0, 0.5)); // Rouge semi-transparent
+                gc.fillRect(x, y, size, size);
+            }
+        }
+
+        // 3. DEBUG : VISUALISER LA COLLISION (Cadre Rouge)
+        // C'est CE CADRE qui bloque contre les murs.
+        // Tant que ce cadre ne touche pas le mur gris, tout va bien.
         gc.setStroke(Color.RED);
         gc.setLineWidth(1);
         gc.strokeRect(x + hitboxOffset, y + hitboxOffset, hitboxSize, hitboxSize);
 
-        // 3. Bouclier
+        // 4. Bouclier
         if (shield) {
             gc.setStroke(Color.CYAN);
             gc.setLineWidth(3);
@@ -85,41 +99,100 @@ public class Player {
     }
 
     // Getters pour la physique
-    public double getX() { return x; }
-    public double getY() { return y; }
-    public double getSize() { return size; }
-    public double getHitboxSize() { return hitboxSize; }
-    public double getHitboxOffset() { return hitboxOffset; }
+    public double getX() {
+        return x;
+    }
 
-    public boolean isAlive() { return health > 0; }
-    public boolean hasWon() { return won; }
-    public void setWon(boolean w) { this.won = w; }
-    
+    public double getY() {
+        return y;
+    }
+
+    public double getSize() {
+        return size;
+    }
+
+    public double getHitboxSize() {
+        return hitboxSize;
+    }
+
+    public double getHitboxOffset() {
+        return hitboxOffset;
+    }
+
+    public boolean isAlive() {
+        return health > 0;
+    }
+
+    public boolean hasWon() {
+        return won;
+    }
+
+    public void setWon(boolean w) {
+        this.won = w;
+    }
+
     public void takeDamage(int amount) {
-        if (invulnerable) return;
+        if (invulnerable) {
+            return;
+        }
         this.health -= amount;
         this.invulnerable = true;
         this.lastDamageTime = System.currentTimeMillis();
     }
-    
+
     public void resetPosition() {
         this.x = 400; // Retour au centre
         this.y = 300;
         this.won = false; // On annule la victoire pour jouer le niveau suivant
         // On garde la vie et le score !
     }
-    
-    public void heal(int amount) { health += amount; }
-    public void addScore(int pts) { score += pts; }
-    public int getHealth() { return health; }
-    public int getScore() { return score; }
-    
-    public double getSpeed() { return speed; }
-    public void setSpeed(double s) { this.speed = s; }
-    public void setCurrentState(PlayerState s) { this.currentState = s; }
-    public PlayerState getCurrentState() { return currentState; }
-    public boolean hasShield() { return shield; }
-    public void enableShield() { this.shield = true; }
-    public void disableShield() { this.shield = false; }
-    public void addPowerUp(PowerUp p) { p.apply(this); powerUps.add(p); }
+
+    public void heal(int amount) {
+        health += amount;
+    }
+
+    public void addScore(int pts) {
+        score += pts;
+    }
+
+    public int getHealth() {
+        return health;
+    }
+
+    public int getScore() {
+        return score;
+    }
+
+    public double getSpeed() {
+        return speed;
+    }
+
+    public void setSpeed(double s) {
+        this.speed = s;
+    }
+
+    public void setCurrentState(PlayerState s) {
+        this.currentState = s;
+    }
+
+    public PlayerState getCurrentState() {
+        return currentState;
+    }
+
+    public boolean hasShield() {
+        return shield;
+    }
+
+    public void enableShield() {
+        this.shield = true;
+    }
+
+    public void disableShield() {
+        this.shield = false;
+    }
+
+    public void addPowerUp(PowerUp p) {
+        p.apply(this);
+        powerUps.add(p);
+    }
 }
