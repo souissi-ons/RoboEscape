@@ -102,6 +102,13 @@ public class Player {
         this.lastDamageTime = System.currentTimeMillis();
     }
     
+    public void resetPosition() {
+        this.x = 400; // Retour au centre
+        this.y = 300;
+        this.won = false; // On annule la victoire pour jouer le niveau suivant
+        // On garde la vie et le score !
+    }
+    
     public void heal(int amount) { health += amount; }
     public void addScore(int pts) { score += pts; }
     public int getHealth() { return health; }
