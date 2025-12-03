@@ -22,6 +22,7 @@ public class RoboEscape extends Application {
         stage.setTitle("RoboEscape - Pattern Edition");
         stage.setResizable(false);
         stage.show();
+        view.requestFocus();
     }
 
     public static void main(String[] args) {

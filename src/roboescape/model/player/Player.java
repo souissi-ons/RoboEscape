@@ -26,7 +26,7 @@ public class Player {
     private List<GameObserver> observers = new ArrayList<>();
     
     // --- GAMEPLAY ---
-    private double speed = 1.5;
+    private double speed = 1;
     private int health = 3;
     private int score = 0;
     private boolean shield = false;

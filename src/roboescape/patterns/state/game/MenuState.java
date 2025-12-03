@@ -1,5 +1,8 @@
 package roboescape.patterns.state.game;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.KeyCode;
 import javafx.scene.paint.Color;
@@ -13,17 +16,34 @@ import roboescape.view.GameView;
 
 public class MenuState implements GameState {
 
-    private GameView context;
-    private long startTime;
+    private final GameView context;
+    
+    // Pour la navigation (0 = Jouer, 1 = Quitter)
+    private int currentSelection = 0;
+    private final String[] options = {"COMMENCER LA MISSION", "QUITTER LE SYSTÈME"};
+
+    // Pour les effets visuels (Particules)
+    private final List<Particle> particles = new ArrayList<>();
+    private final Random random = new Random();
 
     public MenuState(GameView context) {
         this.context = context;
-        this.startTime = System.currentTimeMillis();
+        // Création de 50 particules au démarrage
+        for (int i = 0; i < 50; i++) {
+            particles.add(new Particle(random.nextDouble() * 800, random.nextDouble() * 600));
+        }
     }
 
     @Override
     public void update() {
-        // On pourrait animer des choses ici si besoin
+        // Mettre à jour les particules (les faire monter)
+        for (Particle p : particles) {
+            p.y -= p.speed;
+            if (p.y < 0) {
+                p.y = 600;
+                p.x = random.nextDouble() * 800;
+            }
+        }
     }
 
     @Override
@@ -31,104 +51,102 @@ public class MenuState implements GameState {
         double w = 800;
         double h = 600;
 
-        // 1. FOND DÉGRADÉ (Cyberpunk Blue)
-        LinearGradient gradient = new LinearGradient(
-                0, 0, 0, 1, true, CycleMethod.NO_CYCLE,
-                new Stop(0, Color.rgb(10, 10, 30)),
-                new Stop(1, Color.rgb(20, 20, 60))
-        );
-        gc.setFill(gradient);
+        // 1. FOND DÉGRADÉ PROFOND
+        LinearGradient bg = new LinearGradient(0, 0, 0, 1, true, CycleMethod.NO_CYCLE,
+                new Stop(0, Color.rgb(15, 15, 30)),
+                new Stop(1, Color.rgb(5, 5, 20)));
+        gc.setFill(bg);
         gc.fillRect(0, 0, w, h);
 
-        // 2. EFFET DE GRILLE (Retro Grid)
-        gc.setStroke(Color.rgb(255, 255, 255, 0.05));
-        gc.setLineWidth(1);
-        for(int i=0; i<w; i+=40) gc.strokeLine(i, 0, i, h);
-        for(int i=0; i<h; i+=40) gc.strokeLine(0, i, w, i);
-
-        // 3. TITRE AVEC OMBRE 3D
-        gc.setTextAlign(TextAlignment.CENTER);
-        gc.setFont(Font.font("Verdana", FontWeight.BLACK, 70));
-        
-        // Ombre portée
-        gc.setFill(Color.rgb(0, 0, 0, 0.5));
-        gc.fillText("ROBO ESCAPE", w/2 + 5, 155);
-        
-        // Texte principal (Cyan Néon)
-        gc.setFill(Color.CYAN);
-        gc.setStroke(Color.WHITE);
-        gc.setLineWidth(2);
-        gc.fillText("ROBO ESCAPE", w/2, 150);
-        gc.strokeText("ROBO ESCAPE", w/2, 150);
-
-        // 4. DESSIN DU ROBOT (Au centre)
-        drawRoboMascot(gc, w/2, 280);
-
-        // 5. INSTRUCTIONS (Clignotement)
-        // Animation simple : 1 seconde visible, 1 seconde invisible
-        if ((System.currentTimeMillis() / 500) % 2 == 0) {
-            gc.setFill(Color.YELLOW);
-            gc.setFont(Font.font("Arial", FontWeight.BOLD, 24));
-            gc.fillText("APPUYEZ SUR [ENTRÉE] POUR JOUER", w/2, 450);
+        // 2. DESSIN DES PARTICULES (Ambiance spatiale)
+        gc.setFill(Color.rgb(100, 255, 255, 0.3));
+        for (Particle p : particles) {
+            gc.fillRect(p.x, p.y, p.size, p.size);
         }
 
-        // 6. SOUS-TEXTE
-        gc.setFill(Color.GRAY);
-        gc.setFont(Font.font("Arial", 16));
-        gc.fillText("[ECHAP] pour Quitter", w/2, 500);
+        // 3. TITRE "ROBO ESCAPE"
+        gc.setTextAlign(TextAlignment.CENTER);
         
-        gc.setFill(Color.WHITE);
-        gc.setFont(Font.font("Courier New", 12));
-        gc.fillText("v1.0 - Projet Design Patterns", w/2, 550);
-    }
+        // Ombre portée du titre
+        gc.setFill(Color.rgb(0, 255, 255, 0.2));
+        gc.setFont(Font.font("Impact", 84)); // Police grasse
+        gc.fillText("ROBO ESCAPE", w/2 + 4, 184);
 
-    // Petite méthode pour dessiner un robot stylé sur le menu
-    private void drawRoboMascot(GraphicsContext gc, double x, double y) {
-        double s = 3; // Échelle
-        
-        gc.save();
-        gc.translate(x - 50, y - 50); // Centrage approximatif
-        
-        // Tête
-        gc.setFill(Color.GRAY);
-        gc.fillRect(10*s, 0*s, 14*s, 10*s);
-        
-        // Yeux (Rouges lumineux)
-        gc.setFill(Color.RED);
-        gc.fillOval(12*s, 2*s, 3*s, 3*s);
-        gc.fillOval(19*s, 2*s, 3*s, 3*s);
-        
-        // Corps
-        gc.setFill(Color.DARKBLUE);
-        gc.fillRect(5*s, 11*s, 24*s, 18*s);
-        
-        // Coeur (Réacteur)
+        // Titre principal
         gc.setFill(Color.CYAN);
-        gc.fillOval(14*s, 15*s, 6*s, 6*s);
+        gc.setFont(Font.font("Impact", 80));
+        gc.fillText("ROBO ESCAPE", w/2, 180);
         
-        // Bras
-        gc.setStroke(Color.GRAY);
-        gc.setLineWidth(4*s);
-        gc.strokeLine(5*s, 13*s, 0*s, 20*s); // Bras gauche
-        gc.strokeLine(29*s, 13*s, 34*s, 20*s); // Bras droit
+        // Sous-titre
+        gc.setFill(Color.WHITE);
+        gc.setFont(Font.font("Courier New", 16));
+        gc.fillText("PROTOCOL: ESCAPE // STATUS: READY", w/2, 210);
 
-        gc.restore();
+        // 4. MENU DE SÉLECTION
+        gc.setFont(Font.font("Arial", FontWeight.BOLD, 24));
+        
+        for (int i = 0; i < options.length; i++) {
+            double yPos = 350 + (i * 60);
+            
+            if (i == currentSelection) {
+                // Option sélectionnée (Brillante + Flèches)
+                gc.setFill(Color.YELLOW);
+                gc.fillText(">  " + options[i] + "  <", w/2, yPos);
+                
+                // Effet de lueur autour du texte sélectionné
+                gc.setStroke(Color.ORANGE);
+                gc.setLineWidth(1);
+                gc.strokeText(">  " + options[i] + "  <", w/2, yPos);
+            } else {
+                // Option non sélectionnée (Grise)
+                gc.setFill(Color.GRAY);
+                gc.fillText(options[i], w/2, yPos);
+            }
+        }
+
+        // 5. INSTRUCTIONS BAS DE PAGE
+        gc.setFill(Color.rgb(100, 100, 100));
+        gc.setFont(Font.font("Arial", 12));
+        gc.fillText("Utilisez les FLÈCHES pour choisir et ENTRÉE pour valider", w/2, 550);
     }
 
     @Override
     public void handleInput(KeyCode code) {
-        if (code == KeyCode.ENTER) {
-            // 1. On réinitialise le jeu au niveau 1
+        if (code == KeyCode.UP) {
+            currentSelection--;
+            if (currentSelection < 0) currentSelection = options.length - 1;
+        } 
+        else if (code == KeyCode.DOWN) {
+            currentSelection++;
+            if (currentSelection >= options.length) currentSelection = 0;
+        } 
+        else if (code == KeyCode.ENTER) {
+            executeSelection();
+        }
+    }
+
+    private void executeSelection() {
+        if (currentSelection == 0) {
+            // JOUER
             context.resetGame(); 
-            
-            // 2. On change l'état pour "Jeu en cours"
-            context.setState(context.getPlayingState()); 
-            
-        } else if (code == KeyCode.ESCAPE) {
+            context.setState(context.getPlayingState());
+        } else if (currentSelection == 1) {
+            // QUITTER
             System.exit(0);
         }
     }
 
     @Override
     public void handleKeyRelease(KeyCode code) {}
+
+    // --- CLASSE INTERNE POUR LES PARTICULES ---
+    private static class Particle {
+        double x, y, speed, size;
+        Particle(double x, double y) {
+            this.x = x;
+            this.y = y;
+            this.speed = 0.5 + Math.random() * 1.5; // Vitesse variable
+            this.size = 1 + Math.random() * 3;      // Taille variable
+        }
+    }
 }

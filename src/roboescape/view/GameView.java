@@ -90,6 +90,43 @@ public class GameView extends StackPane implements GameObserver {
             resetGame();
         }
     }
+   
+    public void drawHUD(GraphicsContext gc) {
+        // --- MODIFICATION DES COORDONNÉES X ---
+        
+        // 1. Fond semi-transparent
+        // Avant : (10, 10, ...) -> Maintenant : (30, 10, ...)
+        gc.setFill(Color.rgb(0, 0, 0, 0.6));
+        gc.fillRect(30, 10, 200, 100); 
+
+        gc.setFill(Color.WHITE);
+        
+        // 2. Niveau (Reste à droite, pas de changement nécessaire)
+        gc.setFont(Font.font("Arial", FontWeight.BOLD, 16));
+        gc.fillText("LEVEL " + currentLevelIndex, 700, 30);
+        
+        // 3. Stats (Décalées vers la droite)
+        // Avant : X=20 -> Maintenant : X=45
+        gc.setFont(Font.font("Arial", 14));
+        gc.fillText("Vitesse: " + String.format("%.1f", player.getSpeed()), 45, 30);
+        
+        // Bouclier
+        if (player.hasShield()) {
+            gc.setFill(Color.CYAN);
+            gc.fillText("BOUCLIER: ACTIF", 45, 50);
+        } else {
+            gc.setFill(Color.GRAY);
+            gc.fillText("Bouclier: Non", 45, 50);
+        }
+
+        // Vie (Mise à jour via Observer)
+        gc.setFill(Color.rgb(255, 80, 80));
+        gc.fillText("Vie: " + displayedHealth, 45, 70);
+
+        // Score (Mise à jour via Observer)
+        gc.setFill(Color.GOLD);
+        gc.fillText("Score: " + displayedScore, 45, 90);
+    }
 
     public void resetGame() {
         currentLevelIndex = 1;
@@ -112,21 +149,6 @@ public class GameView extends StackPane implements GameObserver {
     public Level getLevel() { return level; }
 
     // Appelé par PlayingState
-    public void drawHUD(GraphicsContext gc) {
-        gc.setFill(Color.rgb(0, 0, 0, 0.6));
-        gc.fillRect(10, 10, 200, 100);
-        gc.setFill(Color.WHITE);
-        gc.setFont(Font.font("Arial", FontWeight.BOLD, 16));
-        gc.fillText("LEVEL " + currentLevelIndex, 700, 30);
-        gc.setFont(Font.font("Arial", 14));
-        gc.fillText("Vitesse: " + String.format("%.1f", player.getSpeed()), 20, 30);
-        
-        // On utilise les valeurs mises à jour par l'Observer
-        gc.setFill(Color.rgb(255, 80, 80));
-        gc.fillText("Vie: " + displayedHealth, 20, 50);
-        gc.setFill(Color.GOLD);
-        gc.fillText("Score: " + displayedScore, 20, 70);
-    }
 
     // Gestion Input déléguée par RoboEscape.java
     public void onKeyPressed(javafx.scene.input.KeyCode code) {
