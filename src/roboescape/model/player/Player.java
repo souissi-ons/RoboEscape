@@ -8,6 +8,7 @@ import javafx.scene.paint.Color;
 import roboescape.patterns.decorator.PowerUp;
 import roboescape.patterns.state.PlayerState;
 import roboescape.patterns.state.NormalState;
+import roboescape.patterns.observer.GameObserver;
 
 public class Player {
 
@@ -22,7 +23,8 @@ public class Player {
     // On met une hitbox TRES petite (20px) pour être très agile
     private double hitboxSize = 28;
     private double hitboxOffset = (size - hitboxSize) / 2; // = 10px de marge
-
+    private List<GameObserver> observers = new ArrayList<>();
+    
     // --- GAMEPLAY ---
     private double speed = 3;
     private int health = 3;
@@ -132,27 +134,29 @@ public class Player {
     }
 
     public void takeDamage(int amount) {
-        if (invulnerable) {
-            return;
-        }
+        if (invulnerable) return;
         this.health -= amount;
         this.invulnerable = true;
         this.lastDamageTime = System.currentTimeMillis();
+        notifyObservers(); // <--- NOTIFICATION
     }
 
     public void resetPosition() {
         this.x = 400; // Retour au centre
         this.y = 300;
-        this.won = false; // On annule la victoire pour jouer le niveau suivant
+        this.won = false;
+        notifyObservers();// On annule la victoire pour jouer le niveau suivant
         // On garde la vie et le score !
     }
 
     public void heal(int amount) {
-        health += amount;
+        this.health += amount;
+        notifyObservers(); // <--- NOTIFICATION
     }
 
-    public void addScore(int pts) {
-        score += pts;
+    public void addScore(int points) {
+        this.score += points;
+        notifyObservers(); // <--- NOTIFICATION
     }
 
     public int getHealth() {
@@ -194,5 +198,14 @@ public class Player {
     public void addPowerUp(PowerUp p) {
         p.apply(this);
         powerUps.add(p);
+    }
+    public void addObserver(GameObserver observer) {
+        observers.add(observer);
+    }
+    private void notifyObservers() {
+        // On envoie (vie, score, 0) -> Le niveau sera géré par la Vue, on met 0 par défaut ici
+        for (GameObserver obs : observers) {
+            obs.onPlayerUpdate(health, score, 0); 
+        }
     }
 }
