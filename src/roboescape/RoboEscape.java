@@ -11,15 +11,18 @@ public class RoboEscape extends Application {
     public void start(Stage stage) {
 
         GameView view = new GameView();
-
         Scene scene = new Scene(view, 800, 600);
 
-        scene.setOnKeyPressed(e -> view.getController().onKeyPressed(e.getCode()));
-        scene.setOnKeyReleased(e -> view.getController().onKeyReleased(e.getCode()));
+        // Correction : On appelle onKeyPressed sur la VUE, pas directement sur le contrôleur
+        // C'est la Vue qui décidera (via le State Pattern) quoi faire de la touche.
+        scene.setOnKeyPressed(e -> view.onKeyPressed(e.getCode()));
+        scene.setOnKeyReleased(e -> view.onKeyReleased(e.getCode()));
 
         stage.setScene(scene);
-        stage.setTitle("RoboEscape");
+        stage.setTitle("RoboEscape - Pattern Edition");
+        stage.setResizable(false);
         stage.show();
+        view.requestFocus();
     }
 
     public static void main(String[] args) {
