@@ -111,40 +111,114 @@ public class GameView extends StackPane implements GameObserver {
     }
 
     public void drawHUD(GraphicsContext gc) {
-        // --- MODIFICATION DES COORDONNÉES X ---
+        gc.save();
 
-        // 1. Fond semi-transparent
-        // Avant : (10, 10, ...) -> Maintenant : (30, 10, ...)
-        gc.setFill(Color.rgb(0, 0, 0, 0.6));
-        gc.fillRect(30, 10, 200, 100);
+        // --- CONFIGURATION ---
+        double startX = 15;
+        double startY = 15;
+        double cardW = 200;
+        double cardH = 95;
+        double x = startX;
+        double y = startY;
 
+        // --- 1. GLASSY BACKGROUND (Compact & Transparent) ---
+        // Fond très transparent (Glass)
+        gc.setFill(Color.rgb(10, 20, 30, 0.3));
+        gc.fillRoundRect(x, y, cardW, cardH, 10, 10);
+
+        // Bordure technologique subtile
+        gc.setStroke(Color.rgb(100, 200, 255, 0.4));
+        gc.setLineWidth(1.0);
+        gc.strokeRoundRect(x, y, cardW, cardH, 10, 10);
+
+        // Ligne déco interne
+        gc.setStroke(Color.rgb(255, 255, 255, 0.15));
+        gc.strokeLine(x + 10, y + 28, x + cardW - 10, y + 28);
+
+        // --- 2. STATS PRINCIPALES ---
+
+        // SCORE (Haut Droite de la carte)
+        gc.setTextAlign(javafx.scene.text.TextAlignment.RIGHT);
+        gc.setFill(Color.GOLD);
+        gc.setFont(Font.font("Arial", FontWeight.BOLD, 18));
+        gc.fillText(String.valueOf(displayedScore), x + cardW - 15, y + 22);
+
+        // LABEL SCORE (Petit)
+        gc.setFill(Color.rgb(200, 200, 200, 0.7));
+        gc.setFont(Font.font("Arial", 8));
+        gc.fillText("SCORE", x + cardW - 15, y + 10);
+
+        // LEVEL (Haut Gauche)
+        gc.setTextAlign(javafx.scene.text.TextAlignment.LEFT);
         gc.setFill(Color.WHITE);
+        gc.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        gc.fillText("LVL " + currentLevelIndex, x + 15, y + 22);
 
-        // 2. Niveau (Reste à droite, pas de changement nécessaire)
-        gc.setFont(Font.font("Arial", FontWeight.BOLD, 16));
-        gc.fillText("LEVEL " + currentLevelIndex, 700, 30);
+        // --- 3. DYNAMIC HEALTH (Variable Lives) ---
+        // Dessiner des carrés pour la vie. Si > 10, on change de stratégie (mais ici on
+        // suppose < 20)
+        double hpY = y + 45;
+        double hpX = x + 15;
+        double hpBlockW = 8;
+        double hpBlockH = 12;
+        double hpGap = 3;
 
-        // 3. Stats (Décalées vers la droite)
-        // Avant : X=20 -> Maintenant : X=45
-        gc.setFont(Font.font("Arial", 14));
-        gc.fillText("Vitesse: " + String.format("%.1f", player.getSpeed()), 45, 30);
+        gc.setFill(Color.rgb(200, 200, 200, 0.8));
+        gc.setFont(Font.font("Arial", 10));
+        gc.fillText("HP", hpX, hpY - 5);
 
-        // Bouclier
-        if (player.hasShield()) {
-            gc.setFill(Color.CYAN);
-            gc.fillText("BOUCLIER: ACTIF", 45, 50);
-        } else {
-            gc.setFill(Color.GRAY);
-            gc.fillText("Bouclier: Non", 45, 50);
+        for (int i = 0; i < displayedHealth; i++) {
+            // Couleur dynamique (Rouge -> Vert)
+            if (displayedHealth <= 2)
+                gc.setFill(Color.rgb(255, 60, 60, 0.9));
+            else
+                gc.setFill(Color.rgb(60, 255, 100, 0.9));
+
+            // Gestion retour à la ligne si trop de vies (> 15 par ligne approx)
+            double offsetX = (hpBlockW + hpGap) * (i % 15);
+            double offsetY = (i / 15) * (hpBlockH + hpGap);
+
+            gc.fillRect(hpX + 20 + offsetX, hpY - 14 + offsetY, hpBlockW, hpBlockH);
         }
 
-        // Vie (Mise à jour via Observer)
-        gc.setFill(Color.rgb(255, 80, 80));
-        gc.fillText("Vie: " + displayedHealth, 45, 70);
+        // --- 4. SPEED & SHIELD ---
+        double bottomY = y + 75;
 
-        // Score (Mise à jour via Observer)
-        gc.setFill(Color.GOLD);
-        gc.fillText("Score: " + displayedScore, 45, 90);
+        // SHIELD (Indicateur gauche)
+        if (player.hasShield()) {
+            gc.setFill(Color.CYAN);
+            gc.setEffect(null); // Pas d'effet lourd, juste couleur
+            gc.fillOval(x + 15, bottomY - 6, 8, 8);
+            gc.setFill(Color.CYAN);
+            gc.setFont(Font.font("Arial", FontWeight.BOLD, 11));
+            gc.fillText("SHIELD", x + 28, bottomY + 2);
+        } else {
+            gc.setStroke(Color.GRAY);
+            gc.strokeOval(x + 15, bottomY - 6, 8, 8);
+            gc.setFill(Color.rgb(150, 150, 150, 0.5));
+            gc.setFont(Font.font("Arial", 11));
+            gc.fillText("NO SHIELD", x + 28, bottomY + 2);
+        }
+
+        // SPEED (Barre à droite)
+        double currentSpeed = player.getSpeed();
+        double maxSpeedDef = 1000.0; // Vitesse max arbitraire pour la jauge
+        double speedRatio = Math.min(currentSpeed / maxSpeedDef, 1.0);
+        double barW = 60;
+        double barH = 4;
+        double barX = x + cardW - barW - 15;
+
+        gc.setFill(Color.GRAY);
+        gc.fillRect(barX, bottomY - 2, barW, barH); // Fond de barre
+
+        gc.setFill(Color.WHITE);
+        gc.fillRect(barX, bottomY - 2, barW * speedRatio, barH); // Barre active
+
+        gc.setFill(Color.rgb(200, 200, 200, 0.8));
+        gc.setFont(Font.font("Arial", 9));
+        gc.fillText("SPD", barX - 22, bottomY + 3);
+
+        gc.restore();
     }
 
     public void restartGame() {
