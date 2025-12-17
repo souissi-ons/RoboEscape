@@ -13,10 +13,25 @@ public class HorizontalPatrolStrategy implements MovementStrategy {
 
     @Override
     public void move(Enemy enemy, double speed) {
-        // Change X au lieu de Y
-        enemy.setX(enemy.getX() + (speed * direction));
-        
-        if (enemy.getX() > rightLimit) direction = -1;
-        if (enemy.getX() < leftLimit) direction = 1;
+        double nextX = enemy.getX() + (speed * direction);
+
+        // 1. Check Level Collision (Walls)
+        if (enemy.getLevel() != null) {
+            boolean collision = enemy.getLevel().checkCollisionRect(
+                    nextX, enemy.getY(), enemy.getSize(), enemy.getSize());
+
+            if (collision) {
+                direction *= -1; // Bounce
+                return; // Abort move
+            }
+        }
+
+        // 2. Check Patrol Limits
+        if (nextX > rightLimit)
+            direction = -1;
+        if (nextX < leftLimit)
+            direction = 1;
+
+        enemy.setX(nextX);
     }
 }
