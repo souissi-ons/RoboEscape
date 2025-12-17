@@ -128,7 +128,7 @@ public class MenuState implements GameState {
     private void executeSelection() {
         if (currentSelection == 0) {
             // JOUER
-            context.resetGame();
+            context.restartGame();
             context.setState(context.getPlayingState());
         } else if (currentSelection == 1) {
             // QUITTER

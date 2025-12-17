@@ -78,7 +78,7 @@ public class PauseState implements GameState {
             context.setState(context.getPlayingState()); // Retour au jeu
         } else if (code == KeyCode.M) {
             context.setState(new MenuState(context)); // Retour au menu
-            context.resetGame(); // Réinitialiser le jeu
+            context.restartGame(); // Réinitialiser le jeu
         }
     }
 

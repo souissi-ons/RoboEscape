@@ -106,7 +106,7 @@ public class GameView extends StackPane implements GameObserver {
             // Vous pourriez créer un WinState ici !
             System.out.println("Victoire Totale !");
             this.setState(new MenuState(this)); // Retour menu pour l'instant
-            resetGame();
+            restartGame();
         }
     }
 
@@ -147,12 +147,12 @@ public class GameView extends StackPane implements GameObserver {
         gc.fillText("Score: " + displayedScore, 45, 90);
     }
 
-    public void resetGame() {
+    public void restartGame() {
         currentLevelIndex = 1;
-        player.resetPosition();
-        // Reset score/health manuellement si besoin, ou recréer un Player
+        player.resetToInitialState();
         this.level = LevelFactory.createLevel(currentLevelIndex);
         controller.setLevel(level);
+        setState(playingState);
     }
 
     // --- IMPLEMENTATION OBSERVER ---

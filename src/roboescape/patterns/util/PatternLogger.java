@@ -85,6 +85,17 @@ public class PatternLogger {
         log("FACTORY", "%s created %s", factory, product);
     }
 
+    // ========== COMMAND PATTERN ==========
+
+    /**
+     * Logs command execution (Command Pattern)
+     * 
+     * @param commandName Name of the command being executed
+     */
+    public static void logCommandExecution(String commandName) {
+        log("COMMAND", "%s executed", commandName);
+    }
+
     // ========== INTERNAL ==========
 
     private static void log(String pattern, String format, Object... args) {

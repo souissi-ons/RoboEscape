@@ -144,6 +144,19 @@ public class Player {
         notifyObservers(); // <--- NOTIFICATION
     }
 
+    public void resetToInitialState() {
+        this.x = 400;
+        this.y = 300;
+        this.health = 3;
+        this.score = 0;
+        this.won = false;
+        this.shield = false;
+        this.invulnerable = false;
+        this.powerUps.clear();
+        setCurrentState(new NormalState(this));
+        notifyObservers();
+    }
+
     public void resetPosition() {
         this.x = 400; // Retour au centre
         this.y = 300;

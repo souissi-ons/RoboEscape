@@ -10,6 +10,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.TextAlignment;
 import roboescape.view.GameView;
+import roboescape.patterns.command.RestartCommand;
 
 public class GameOverState implements GameState {
 
@@ -48,16 +49,17 @@ public class GameOverState implements GameState {
         if ((System.currentTimeMillis() / 500) % 2 == 0) {
             gc.setFill(Color.YELLOW);
             gc.setFont(Font.font("Arial", FontWeight.BOLD, 20));
-            gc.fillText("Appuyez sur ENTRÉE pour le Menu", w / 2, 450);
+            gc.fillText("Press R to Restart or ENTER for Menu", w / 2, 450);
         }
     }
 
     @Override
     public void handleInput(KeyCode code) {
-        // MODIFICATION ICI : Entrée retourne au Menu
         if (code == KeyCode.ENTER || code == KeyCode.ESCAPE) {
-            context.resetGame(); // Nettoie le niveau actuel
-            context.setState(new MenuState(context)); // Retour au Menu
+            context.restartGame();
+            context.setState(new MenuState(context));
+        } else if (code == KeyCode.R) {
+            new RestartCommand(context).execute();
         }
     }
 
