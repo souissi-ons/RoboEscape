@@ -14,13 +14,13 @@ public class PlayingState implements GameState {
     }
 
     @Override
-    public void update() {
+    public void update(double deltaTime) {
         // Si le joueur gagne le niveau
         if (context.getPlayer().hasWon()) {
             context.loadNextLevel();
             return;
         }
-        
+
         // Si le joueur meurt
         if (!context.getPlayer().isAlive()) {
             context.setState(new GameOverState(context));
@@ -31,7 +31,7 @@ public class PlayingState implements GameState {
         if (context.getLevel() != null) {
             context.getLevel().update();
         }
-        context.getController().update(800, 600);
+        context.getController().update(800, 600, deltaTime);
     }
 
     @Override
@@ -47,7 +47,7 @@ public class PlayingState implements GameState {
 
         // Joueur
         context.getPlayer().render(gc);
-        
+
         // HUD (Délégué à la vue ou dessiné ici)
         context.drawHUD(gc);
     }
@@ -56,12 +56,11 @@ public class PlayingState implements GameState {
     public void handleInput(KeyCode code) {
         if (code == KeyCode.SPACE) {
             context.setState(new PauseState(context)); // Transition vers Pause
-        } 
+        }
         // Si vous aviez une action sur ESPACE avant, déplacez-la sur 'E' ou 'ENTER'
         else if (code == KeyCode.E) {
             System.out.println("Action !");
-        }
-        else {
+        } else {
             context.getController().onKeyPressed(code);
         }
     }

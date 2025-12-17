@@ -19,30 +19,30 @@ public class GameController {
         this.level = level;
     }
 
-    public void update(double width, double height) {
-        if (!player.isAlive() || player.hasWon()) return;
+    public void update(double width, double height, double deltaTime) {
+        if (!player.isAlive() || player.hasWon())
+            return;
 
         double speed = player.getSpeed();
+        double distance = speed * deltaTime;
+
         double moveX = 0;
         double moveY = 0;
 
-        if (left) moveX -= speed;
-        if (right) moveX += speed;
-        if (up) moveY -= speed;
-        if (down) moveY += speed;
+        if (left)
+            moveX -= distance;
+        if (right)
+            moveX += distance;
+        if (up)
+            moveY -= distance;
+        if (down)
+            moveY += distance;
 
         if (level != null) {
-            double hbSize = player.getHitboxSize();     // ex: 28px
-            double offset = player.getHitboxOffset();   // ex: 6px
+            double hbSize = player.getHitboxSize(); // ex: 28px
+            double offset = player.getHitboxOffset(); // ex: 6px
             double currentX = player.getX();
             double currentY = player.getY();
-
-            // Marge pour glisser sur les murs latéraux (évite les frottements)
-            double slideMargin = 4.0; 
-            
-            // Marge pour ignorer l'arrière du robot (Anti-Collage)
-            // Permet de s'éloigner d'un mur même si on chevauche légèrement
-            double ignoreBackMargin = 10.0; 
 
             // =========================================================
             // 1. GESTION AXE X (Gauche / Droite)
@@ -50,16 +50,11 @@ public class GameController {
             if (moveX != 0) {
                 double nextX = currentX + moveX;
 
-                // Si je vais à DROITE : J'ignore ce qui se passe à ma GAUCHE (l'arrière)
-                double ignoreLeft = (moveX > 0) ? ignoreBackMargin : 0;
-                // Si je vais à GAUCHE : J'ignore ce qui se passe à ma DROITE (l'arrière)
-                double ignoreRight = (moveX < 0) ? ignoreBackMargin : 0;
-
                 boolean collideX = level.checkCollisionRect(
-                    nextX + offset + ignoreLeft,        // X ajusté (Avant seulement)
-                    currentY + offset + slideMargin,    // Y + 4px (Ignore frottement Haut)
-                    hbSize - ignoreLeft - ignoreRight,  // Largeur réduite (Focus sur l'avant)
-                    hbSize - (slideMargin * 2)          // Hauteur réduite (Ignore frottement Bas)
+                        nextX + offset, // X projected
+                        currentY + offset, // Y current
+                        hbSize, // Full Width
+                        hbSize // Full Height
                 );
 
                 if (!collideX) {
@@ -74,16 +69,11 @@ public class GameController {
             if (moveY != 0) {
                 double nextY = currentY + moveY;
 
-                // Si je vais en BAS : J'ignore ce qui se passe en HAUT (ma tête)
-                double ignoreTop = (moveY > 0) ? ignoreBackMargin : 0;
-                // Si je vais en HAUT : J'ignore ce qui se passe en BAS (mes pieds)
-                double ignoreBottom = (moveY < 0) ? ignoreBackMargin : 0;
-
                 boolean collideY = level.checkCollisionRect(
-                    currentX + offset + slideMargin,    // X + 4px (Ignore frottement Gauche)
-                    nextY + offset + ignoreTop,         // Y ajusté (Avant seulement)
-                    hbSize - (slideMargin * 2),         // Largeur réduite (Ignore frottement Droite)
-                    hbSize - ignoreTop - ignoreBottom   // Hauteur réduite (Focus sur l'avant)
+                        currentX + offset, // X current
+                        nextY + offset, // Y projected
+                        hbSize, // Full Width
+                        hbSize // Full Height
                 );
 
                 if (!collideY) {
@@ -97,7 +87,8 @@ public class GameController {
             for (Enemy e : level.getEnemies()) {
                 // Hitbox légèrement permissive pour les ennemis
                 if (e.checkCollision(player.getX() + 5, player.getY() + 5, player.getSize() - 10)) {
-                    if (!player.hasShield()) player.takeDamage(1);
+                    if (!player.hasShield())
+                        player.takeDamage(1);
                 }
             }
 
@@ -115,20 +106,20 @@ public class GameController {
     }
 
     public void onKeyPressed(KeyCode code) {
-        switch (code) { 
-            case UP -> up = true; 
-            case DOWN -> down = true; 
-            case LEFT -> left = true; 
-            case RIGHT -> right = true; 
+        switch (code) {
+            case UP -> up = true;
+            case DOWN -> down = true;
+            case LEFT -> left = true;
+            case RIGHT -> right = true;
         }
     }
 
     public void onKeyReleased(KeyCode code) {
-        switch (code) { 
-            case UP -> up = false; 
-            case DOWN -> down = false; 
-            case LEFT -> left = false; 
-            case RIGHT -> right = false; 
+        switch (code) {
+            case UP -> up = false;
+            case DOWN -> down = false;
+            case LEFT -> left = false;
+            case RIGHT -> right = false;
         }
     }
 }

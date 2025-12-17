@@ -9,6 +9,7 @@ import roboescape.patterns.decorator.PowerUp;
 import roboescape.patterns.state.PlayerState;
 import roboescape.patterns.state.NormalState;
 import roboescape.patterns.observer.GameObserver;
+import roboescape.patterns.util.PatternLogger;
 
 public class Player {
 
@@ -24,9 +25,10 @@ public class Player {
     private double hitboxSize = 28;
     private double hitboxOffset = (size - hitboxSize) / 2; // = 10px de marge
     private List<GameObserver> observers = new ArrayList<>();
-    
+
     // --- GAMEPLAY ---
-    private double speed = 1;
+    // --- GAMEPLAY ---
+    private double speed = 400.0; // Pixels par seconde
     private int health = 3;
     private int score = 0;
     private boolean shield = false;
@@ -96,8 +98,8 @@ public class Player {
 
     // --- GETTERS & SETTERS ---
     public void move(double dx, double dy) {
-        this.x += dx * speed;
-        this.y += dy * speed;
+        this.x += dx;
+        this.y += dy;
     }
 
     // Getters pour la physique
@@ -134,7 +136,8 @@ public class Player {
     }
 
     public void takeDamage(int amount) {
-        if (invulnerable) return;
+        if (invulnerable)
+            return;
         this.health -= amount;
         this.invulnerable = true;
         this.lastDamageTime = System.currentTimeMillis();
@@ -176,6 +179,9 @@ public class Player {
     }
 
     public void setCurrentState(PlayerState s) {
+        String oldState = (currentState != null) ? currentState.getClass().getSimpleName() : "null";
+        String newState = s.getClass().getSimpleName();
+        PatternLogger.logStateTransition(oldState, newState, "Player");
         this.currentState = s;
     }
 
@@ -199,13 +205,18 @@ public class Player {
         p.apply(this);
         powerUps.add(p);
     }
+
     public void addObserver(GameObserver observer) {
         observers.add(observer);
     }
+
     private void notifyObservers() {
-        // On envoie (vie, score, 0) -> Le niveau sera géré par la Vue, on met 0 par défaut ici
+        // On envoie (vie, score, 0) -> Le niveau sera géré par la Vue, on met 0 par
+        // défaut ici
+        PatternLogger.logObserverNotified("GameView", "PlayerUpdate",
+                "Health=" + health, "Score=" + score);
         for (GameObserver obs : observers) {
-            obs.onPlayerUpdate(health, score, 0); 
+            obs.onPlayerUpdate(health, score, 0);
         }
     }
 }

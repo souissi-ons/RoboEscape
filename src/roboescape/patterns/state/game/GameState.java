@@ -4,8 +4,11 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.KeyCode;
 
 public interface GameState {
-    void update();
+    void update(double deltaTime);
+
     void render(GraphicsContext gc);
+
     void handleInput(KeyCode code);
+
     void handleKeyRelease(KeyCode code);
 }

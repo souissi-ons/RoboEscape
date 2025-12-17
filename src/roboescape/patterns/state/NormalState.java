@@ -9,7 +9,7 @@ public class NormalState implements PlayerState {
 
     public NormalState(Player p) {
         this.player = p;
-        player.setSpeed(3);
+        player.setSpeed(400);
     }
 
     @Override

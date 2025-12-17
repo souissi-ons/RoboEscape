@@ -15,6 +15,7 @@ import roboescape.patterns.observer.GameObserver;
 import roboescape.patterns.state.game.GameState;
 import roboescape.patterns.state.game.MenuState;
 import roboescape.patterns.state.game.PlayingState;
+import roboescape.patterns.util.PatternLogger;
 
 public class GameView extends StackPane implements GameObserver {
 
@@ -41,7 +42,7 @@ public class GameView extends StackPane implements GameObserver {
 
         this.player = new Player();
         this.player.addObserver(this); // Observer Pattern : On écoute le joueur
-        
+
         this.controller = new GameController(player);
         this.getChildren().add(canvas);
 
@@ -55,10 +56,25 @@ public class GameView extends StackPane implements GameObserver {
     // --- GAME LOOP ---
     private void startGameLoop() {
         AnimationTimer timer = new AnimationTimer() {
+            private long lastUpdate = 0;
+
             @Override
             public void handle(long now) {
+                if (lastUpdate == 0) {
+                    lastUpdate = now;
+                    return;
+                }
+
+                // Calcul du deltaTime en secondes
+                double deltaTime = (now - lastUpdate) / 1_000_000_000.0;
+                lastUpdate = now;
+
+                // Sécurité : Cap du deltaTime pour éviter de gros sauts si le jeu lag
+                if (deltaTime > 0.1)
+                    deltaTime = 0.1;
+
                 // Tout est délégué à l'état courant !
-                currentState.update();
+                currentState.update(deltaTime);
                 currentState.render(gc);
             }
         };
@@ -67,6 +83,9 @@ public class GameView extends StackPane implements GameObserver {
 
     // --- GESTION DES ÉTATS ---
     public void setState(GameState state) {
+        String oldState = (currentState != null) ? currentState.getClass().getSimpleName() : "null";
+        String newState = state.getClass().getSimpleName();
+        PatternLogger.logStateTransition(oldState, newState, "GameView");
         this.currentState = state;
     }
 
@@ -90,26 +109,26 @@ public class GameView extends StackPane implements GameObserver {
             resetGame();
         }
     }
-   
+
     public void drawHUD(GraphicsContext gc) {
         // --- MODIFICATION DES COORDONNÉES X ---
-        
+
         // 1. Fond semi-transparent
         // Avant : (10, 10, ...) -> Maintenant : (30, 10, ...)
         gc.setFill(Color.rgb(0, 0, 0, 0.6));
-        gc.fillRect(30, 10, 200, 100); 
+        gc.fillRect(30, 10, 200, 100);
 
         gc.setFill(Color.WHITE);
-        
+
         // 2. Niveau (Reste à droite, pas de changement nécessaire)
         gc.setFont(Font.font("Arial", FontWeight.BOLD, 16));
         gc.fillText("LEVEL " + currentLevelIndex, 700, 30);
-        
+
         // 3. Stats (Décalées vers la droite)
         // Avant : X=20 -> Maintenant : X=45
         gc.setFont(Font.font("Arial", 14));
         gc.fillText("Vitesse: " + String.format("%.1f", player.getSpeed()), 45, 30);
-        
+
         // Bouclier
         if (player.hasShield()) {
             gc.setFill(Color.CYAN);
@@ -144,9 +163,17 @@ public class GameView extends StackPane implements GameObserver {
     }
 
     // --- MÉTHODES UTILITAIRES POUR LES ÉTATS ---
-    public Player getPlayer() { return player; }
-    public GameController getController() { return controller; }
-    public Level getLevel() { return level; }
+    public Player getPlayer() {
+        return player;
+    }
+
+    public GameController getController() {
+        return controller;
+    }
+
+    public Level getLevel() {
+        return level;
+    }
 
     // Appelé par PlayingState
 
@@ -158,5 +185,5 @@ public class GameView extends StackPane implements GameObserver {
     public void onKeyReleased(javafx.scene.input.KeyCode code) {
         currentState.handleKeyRelease(code);
     }
-    
+
 }

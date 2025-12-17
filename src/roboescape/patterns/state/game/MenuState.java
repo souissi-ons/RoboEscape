@@ -17,10 +17,10 @@ import roboescape.view.GameView;
 public class MenuState implements GameState {
 
     private final GameView context;
-    
+
     // Pour la navigation (0 = Jouer, 1 = Quitter)
     private int currentSelection = 0;
-    private final String[] options = {"COMMENCER LA MISSION", "QUITTER LE SYSTÈME"};
+    private final String[] options = { "COMMENCER LA MISSION", "QUITTER LE SYSTÈME" };
 
     // Pour les effets visuels (Particules)
     private final List<Particle> particles = new ArrayList<>();
@@ -35,7 +35,7 @@ public class MenuState implements GameState {
     }
 
     @Override
-    public void update() {
+    public void update(double deltaTime) {
         // Mettre à jour les particules (les faire monter)
         for (Particle p : particles) {
             p.y -= p.speed;
@@ -66,61 +66,61 @@ public class MenuState implements GameState {
 
         // 3. TITRE "ROBO ESCAPE"
         gc.setTextAlign(TextAlignment.CENTER);
-        
+
         // Ombre portée du titre
         gc.setFill(Color.rgb(0, 255, 255, 0.2));
         gc.setFont(Font.font("Impact", 84)); // Police grasse
-        gc.fillText("ROBO ESCAPE", w/2 + 4, 184);
+        gc.fillText("ROBO ESCAPE", w / 2 + 4, 184);
 
         // Titre principal
         gc.setFill(Color.CYAN);
         gc.setFont(Font.font("Impact", 80));
-        gc.fillText("ROBO ESCAPE", w/2, 180);
-        
+        gc.fillText("ROBO ESCAPE", w / 2, 180);
+
         // Sous-titre
         gc.setFill(Color.WHITE);
         gc.setFont(Font.font("Courier New", 16));
-        gc.fillText("PROTOCOL: ESCAPE // STATUS: READY", w/2, 210);
+        gc.fillText("PROTOCOL: ESCAPE // STATUS: READY", w / 2, 210);
 
         // 4. MENU DE SÉLECTION
         gc.setFont(Font.font("Arial", FontWeight.BOLD, 24));
-        
+
         for (int i = 0; i < options.length; i++) {
             double yPos = 350 + (i * 60);
-            
+
             if (i == currentSelection) {
                 // Option sélectionnée (Brillante + Flèches)
                 gc.setFill(Color.YELLOW);
-                gc.fillText(">  " + options[i] + "  <", w/2, yPos);
-                
+                gc.fillText(">  " + options[i] + "  <", w / 2, yPos);
+
                 // Effet de lueur autour du texte sélectionné
                 gc.setStroke(Color.ORANGE);
                 gc.setLineWidth(1);
-                gc.strokeText(">  " + options[i] + "  <", w/2, yPos);
+                gc.strokeText(">  " + options[i] + "  <", w / 2, yPos);
             } else {
                 // Option non sélectionnée (Grise)
                 gc.setFill(Color.GRAY);
-                gc.fillText(options[i], w/2, yPos);
+                gc.fillText(options[i], w / 2, yPos);
             }
         }
 
         // 5. INSTRUCTIONS BAS DE PAGE
         gc.setFill(Color.rgb(100, 100, 100));
         gc.setFont(Font.font("Arial", 12));
-        gc.fillText("Utilisez les FLÈCHES pour choisir et ENTRÉE pour valider", w/2, 550);
+        gc.fillText("Utilisez les FLÈCHES pour choisir et ENTRÉE pour valider", w / 2, 550);
     }
 
     @Override
     public void handleInput(KeyCode code) {
         if (code == KeyCode.UP) {
             currentSelection--;
-            if (currentSelection < 0) currentSelection = options.length - 1;
-        } 
-        else if (code == KeyCode.DOWN) {
+            if (currentSelection < 0)
+                currentSelection = options.length - 1;
+        } else if (code == KeyCode.DOWN) {
             currentSelection++;
-            if (currentSelection >= options.length) currentSelection = 0;
-        } 
-        else if (code == KeyCode.ENTER) {
+            if (currentSelection >= options.length)
+                currentSelection = 0;
+        } else if (code == KeyCode.ENTER) {
             executeSelection();
         }
     }
@@ -128,7 +128,7 @@ public class MenuState implements GameState {
     private void executeSelection() {
         if (currentSelection == 0) {
             // JOUER
-            context.resetGame(); 
+            context.resetGame();
             context.setState(context.getPlayingState());
         } else if (currentSelection == 1) {
             // QUITTER
@@ -137,16 +137,18 @@ public class MenuState implements GameState {
     }
 
     @Override
-    public void handleKeyRelease(KeyCode code) {}
+    public void handleKeyRelease(KeyCode code) {
+    }
 
     // --- CLASSE INTERNE POUR LES PARTICULES ---
     private static class Particle {
         double x, y, speed, size;
+
         Particle(double x, double y) {
             this.x = x;
             this.y = y;
             this.speed = 0.5 + Math.random() * 1.5; // Vitesse variable
-            this.size = 1 + Math.random() * 3;      // Taille variable
+            this.size = 1 + Math.random() * 3; // Taille variable
         }
     }
 }
