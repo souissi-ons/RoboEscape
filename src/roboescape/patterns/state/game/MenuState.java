@@ -82,6 +82,12 @@ public class MenuState implements GameState {
         gc.setFont(Font.font("Courier New", 16));
         gc.fillText("PROTOCOL: ESCAPE // STATUS: READY", w / 2, 210);
 
+        // High Score Display
+        int highScore = roboescape.model.HighScoreManager.getInstance().getHighScore();
+        gc.setFill(Color.GOLD);
+        gc.setFont(Font.font("Arial", FontWeight.BOLD, 20));
+        gc.fillText("TOP SCORE: " + highScore, w / 2, 250);
+
         // 4. MENU DE SÉLECTION
         gc.setFont(Font.font("Arial", FontWeight.BOLD, 24));
 

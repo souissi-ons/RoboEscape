@@ -43,7 +43,20 @@ public class GameOverState implements GameState {
 
         gc.setFill(Color.WHITE);
         gc.setFont(Font.font("Arial", 30));
-        gc.fillText("Score Final : " + context.getPlayer().getScore(), w / 2, 350);
+        int score = context.getPlayer().getScore();
+        boolean isNewRecord = roboescape.model.HighScoreManager.getInstance().checkAndSetHighScore(score);
+
+        gc.fillText("Score Final : " + score, w / 2, 320);
+
+        if (isNewRecord) {
+            gc.setFill(Color.GOLD);
+            gc.setFont(Font.font("Arial", FontWeight.BOLD, 40));
+            gc.fillText("NEW HIGH SCORE!", w / 2, 380);
+        } else {
+            gc.setFill(Color.GRAY);
+            gc.setFont(Font.font("Arial", 20));
+            gc.fillText("Best: " + roboescape.model.HighScoreManager.getInstance().getHighScore(), w / 2, 380);
+        }
 
         // Instructions mises à jour
         if ((System.currentTimeMillis() / 500) % 2 == 0) {
