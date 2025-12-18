@@ -10,6 +10,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.TextAlignment;
 import roboescape.view.GameView;
+import roboescape.patterns.command.RestartCommand;
 
 public class WinState implements GameState {
 
@@ -20,7 +21,8 @@ public class WinState implements GameState {
     }
 
     @Override
-    public void update() {}
+    public void update(double deltaTime) {
+    }
 
     @Override
     public void render(GraphicsContext gc) {
@@ -37,28 +39,31 @@ public class WinState implements GameState {
         gc.setTextAlign(TextAlignment.CENTER);
         gc.setFill(Color.LIMEGREEN);
         gc.setFont(Font.font("Impact", 80));
-        gc.fillText("MISSION ACCOMPLIE", w/2, 250);
+        gc.fillText("MISSION ACCOMPLIE", w / 2, 250);
 
         gc.setFill(Color.WHITE);
         gc.setFont(Font.font("Arial", 30));
-        gc.fillText("Score Final : " + context.getPlayer().getScore(), w/2, 350);
+        gc.fillText("Score Final : " + context.getPlayer().getScore(), w / 2, 350);
 
         // Instructions
         if ((System.currentTimeMillis() / 500) % 2 == 0) {
             gc.setFill(Color.YELLOW);
             gc.setFont(Font.font("Arial", FontWeight.BOLD, 20));
-            gc.fillText("Appuyez sur [ENTRÉE] pour le Menu", w/2, 450);
+            gc.fillText("Press R to Restart or ENTER for Menu", w / 2, 450);
         }
     }
 
     @Override
     public void handleInput(KeyCode code) {
         if (code == KeyCode.ENTER || code == KeyCode.ESCAPE) {
-            context.resetGame();
-            context.setState(new MenuState(context)); // Retour au Menu
+            context.restartGame();
+            context.setState(new MenuState(context));
+        } else if (code == KeyCode.R) {
+            new RestartCommand(context).execute();
         }
     }
 
     @Override
-    public void handleKeyRelease(KeyCode code) {}
+    public void handleKeyRelease(KeyCode code) {
+    }
 }

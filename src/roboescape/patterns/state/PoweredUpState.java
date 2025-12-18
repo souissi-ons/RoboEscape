@@ -10,7 +10,7 @@ public class PoweredUpState implements PlayerState {
 
     public PoweredUpState(Player player) {
         this.player = player;
-        player.setSpeed(7);
+        player.setSpeed(800);
         player.enableShield();
         startTime = System.currentTimeMillis();
     }
@@ -18,8 +18,8 @@ public class PoweredUpState implements PlayerState {
     @Override
     public void update() {
         long elapsed = System.currentTimeMillis() - startTime;
-        if (elapsed > 3000) {  // 3 secondes
-            player.setSpeed(3);
+        if (elapsed > 3000) { // 3 secondes
+            player.setSpeed(400);
             player.disableShield();
             player.setCurrentState(new NormalState(player));
         }

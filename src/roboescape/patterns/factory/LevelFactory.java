@@ -16,30 +16,32 @@ import roboescape.patterns.decorator.SpeedBoost;
 import roboescape.patterns.strategy.HorizontalPatrolStrategy;
 import roboescape.patterns.strategy.RandomMovementStrategy;
 import roboescape.patterns.strategy.VerticalPatrolStrategy;
+import roboescape.patterns.util.PatternLogger;
 
 public class LevelFactory {
 
     private static final int TILE_SIZE = 40;
     private static final int COLS = 20; // 800px / 40
     private static final int ROWS = 15; // 600px / 40
-    
+
     // Générateur de nombres aléatoires
     private static final Random random = new Random();
 
     public static Level createLevel(int levelNumber) {
+        PatternLogger.logFactoryCreation("LevelFactory", "Level " + levelNumber);
         Level level = new Level();
 
         // --- 1. MURS EXTÉRIEURS (Toujours là) ---
-        level.addWall(new Wall(0, 0, 800, 20));     // Haut
-        level.addWall(new Wall(0, 580, 800, 20));   // Bas
-        level.addWall(new Wall(0, 0, 20, 600));     // Gauche
-        level.addWall(new Wall(780, 0, 20, 600));   // Droite
+        level.addWall(new Wall(0, 0, 800, 20)); // Haut
+        level.addWall(new Wall(0, 580, 800, 20)); // Bas
+        level.addWall(new Wall(0, 0, 20, 600)); // Gauche
+        level.addWall(new Wall(780, 0, 20, 600)); // Droite
 
         // Si c'est le niveau 1, on charge le tuto facile (carte fixe)
         if (levelNumber == 1) {
             return loadFromMap(level, LEVEL_1_MAP);
-        } 
-        
+        }
+
         // SINON : GÉNÉRATION AUTOMATIQUE (Niveau 2 à Infini)
         return generateProceduralLevel(level, levelNumber);
     }
@@ -52,19 +54,19 @@ public class LevelFactory {
 
         // 1. CALCUL DE LA DIFFICULTÉ
         // Plus le niveau est haut, plus il y a de choses
-        int numEnemies = 2 + (difficulty / 2);      // Ex: Niv 10 = 7 ennemis
-        int numTraps = 2 + difficulty;              // Ex: Niv 10 = 12 pièges
-        int numCoins = 5;                           // Toujours 5 pièces
-        
+        int numEnemies = 2 + (difficulty / 2); // Ex: Niv 10 = 7 ennemis
+        int numTraps = 2 + difficulty; // Ex: Niv 10 = 12 pièges
+        int numCoins = 5; // Toujours 5 pièces
+
         // Densité des murs (Chance qu'une case soit un mur)
         // Niv 2 = 10%, Niv 10 = 20%, Max 30%
-        double wallDensity = Math.min(0.1 + (difficulty * 0.01), 0.30); 
+        double wallDensity = Math.min(0.1 + (difficulty * 0.01), 0.30);
 
         // 2. PLACEMENT DES MURS (ALÉATOIRE)
         // On parcourt la grille (on évite les bords qui sont déjà faits)
         for (int row = 1; row < ROWS - 1; row++) {
             for (int col = 1; col < COLS - 1; col++) {
-                
+
                 // ZONE SÛRE (Safe Zone) : Pas de mur au centre (Spawn 400,300)
                 // Le centre est environ à col=10, row=7
                 if (Math.abs(col - 10) < 3 && Math.abs(row - 7) < 3) {
@@ -89,13 +91,14 @@ public class LevelFactory {
         addRandomItems(level, numTraps, "TRAP");
         addRandomItems(level, numCoins, "COIN");
         addRandomItems(level, 1, "HEAL"); // 1 Soin garanti
-        if (difficulty > 3) addRandomItems(level, 1, "POWERUP"); // Bonus dès niv 4
+        if (difficulty > 3)
+            addRandomItems(level, 1, "POWERUP"); // Bonus dès niv 4
 
         // 5. PLACEMENT DES ENNEMIS (Adaptatif)
         for (int i = 0; i < numEnemies; i++) {
             double ex = 100 + random.nextInt(600);
             double ey = 100 + random.nextInt(400);
-            
+
             // Ne pas spawner sur le joueur au centre
             if (Math.abs(ex - 400) < 100 && Math.abs(ey - 300) < 100) {
                 ex += 200; // On décale si c'est trop près
@@ -132,7 +135,8 @@ public class LevelFactory {
             double y = 60 + random.nextInt(480);
 
             // On évite le centre (Spawn)
-            if (Math.abs(x - 400) < 50 && Math.abs(y - 300) < 50) continue;
+            if (Math.abs(x - 400) < 50 && Math.abs(y - 300) < 50)
+                continue;
 
             switch (type) {
                 case "TRAP" -> level.addItem(new TrapItem(x, y));
@@ -173,20 +177,20 @@ public class LevelFactory {
 
     // Carte du Niveau 1 (Tutorial)
     private static final String[] LEVEL_1_MAP = {
-        "####################",
-        "#..................#",
-        "#...C..######......#",
-        "#...S..#....#..C...#",
-        "#......#....#......#",
-        "#......#....#......#",
-        "#..#####....#####..#",
-        "#..................E",
-        "#..#####....#####..#",
-        "#......#....#......#",
-        "#...C..#....#..P...#",
-        "#......######......#",
-        "#..................#",
-        "#..................#",
-        "####################"
+            "####################",
+            "#..................#",
+            "#...C..######......#",
+            "#...S..#....#..C...#",
+            "#......#....#......#",
+            "#......#....#......#",
+            "#..#####....#####..#",
+            "#..................E",
+            "#..#####....#####..#",
+            "#......#....#......#",
+            "#...C..#....#..P...#",
+            "#......######......#",
+            "#..................#",
+            "#..................#",
+            "####################"
     };
 }

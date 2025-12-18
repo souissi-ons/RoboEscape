@@ -10,6 +10,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.TextAlignment;
 import roboescape.view.GameView;
+import roboescape.patterns.command.RestartCommand;
 
 public class GameOverState implements GameState {
 
@@ -20,7 +21,8 @@ public class GameOverState implements GameState {
     }
 
     @Override
-    public void update() {}
+    public void update(double deltaTime) {
+    }
 
     @Override
     public void render(GraphicsContext gc) {
@@ -37,29 +39,31 @@ public class GameOverState implements GameState {
         gc.setTextAlign(TextAlignment.CENTER);
         gc.setFill(Color.RED);
         gc.setFont(Font.font("Impact", 80));
-        gc.fillText("GAME OVER", w/2, 250);
+        gc.fillText("GAME OVER", w / 2, 250);
 
         gc.setFill(Color.WHITE);
         gc.setFont(Font.font("Arial", 30));
-        gc.fillText("Score Final : " + context.getPlayer().getScore(), w/2, 350);
+        gc.fillText("Score Final : " + context.getPlayer().getScore(), w / 2, 350);
 
         // Instructions mises à jour
         if ((System.currentTimeMillis() / 500) % 2 == 0) {
             gc.setFill(Color.YELLOW);
             gc.setFont(Font.font("Arial", FontWeight.BOLD, 20));
-            gc.fillText("Appuyez sur ENTRÉE pour le Menu", w/2, 450);
+            gc.fillText("Press R to Restart or ENTER for Menu", w / 2, 450);
         }
     }
 
     @Override
     public void handleInput(KeyCode code) {
-        // MODIFICATION ICI : Entrée retourne au Menu
         if (code == KeyCode.ENTER || code == KeyCode.ESCAPE) {
-            context.resetGame(); // Nettoie le niveau actuel
-            context.setState(new MenuState(context)); // Retour au Menu
+            context.restartGame();
+            context.setState(new MenuState(context));
+        } else if (code == KeyCode.R) {
+            new RestartCommand(context).execute();
         }
     }
 
     @Override
-    public void handleKeyRelease(KeyCode code) {}
+    public void handleKeyRelease(KeyCode code) {
+    }
 }
