@@ -24,6 +24,7 @@ public class Level implements LevelComponent {
 
     public void addEnemy(Enemy e) {
         enemies.add(e);
+        e.setLevel(this);
     }
 
     public void setExit(Exit e) {

@@ -84,4 +84,14 @@ public class Enemy implements LevelComponent {
         this.movementStrategy = movementStrategy;
     }
 
+    private roboescape.patterns.composite.Level level;
+
+    public void setLevel(roboescape.patterns.composite.Level level) {
+        this.level = level;
+    }
+
+    public roboescape.patterns.composite.Level getLevel() {
+        return level;
+    }
+
 }

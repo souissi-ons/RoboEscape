@@ -81,11 +81,14 @@ public class LevelFactory {
         }
 
         // 3. PLACEMENT DE LA SORTIE
-        // On la met toujours loin, dans un coin aléatoire
-        boolean exitTop = random.nextBoolean();
-        double exitX = random.nextBoolean() ? 50 : 700;
-        double exitY = exitTop ? 50 : 500;
-        level.setExit(new Exit(exitX, exitY, 50));
+        // On cherche une position sûre pour la sortie (loin du centre)
+        double[] exitPos = findSafePosition(level, 50, 50, true);
+        if (exitPos != null) {
+            level.setExit(new Exit(exitPos[0], exitPos[1], 50));
+        } else {
+            // Fallback coin haut gauche si échec
+            level.setExit(new Exit(50, 50, 50));
+        }
 
         // 4. PLACEMENT DES PIÈGES & ITEMS
         addRandomItems(level, numTraps, "TRAP");
@@ -96,13 +99,13 @@ public class LevelFactory {
 
         // 5. PLACEMENT DES ENNEMIS (Adaptatif)
         for (int i = 0; i < numEnemies; i++) {
-            double ex = 100 + random.nextInt(600);
-            double ey = 100 + random.nextInt(400);
+            // Cherche position sûre pour ennemi (30x30)
+            double[] pos = findSafePosition(level, 30, 30, true);
+            if (pos == null)
+                continue; // Skip si pas de place
 
-            // Ne pas spawner sur le joueur au centre
-            if (Math.abs(ex - 400) < 100 && Math.abs(ey - 300) < 100) {
-                ex += 200; // On décale si c'est trop près
-            }
+            double ex = pos[0];
+            double ey = pos[1];
 
             Enemy enemy;
             // Choix du type d'ennemi selon la difficulté
@@ -130,13 +133,13 @@ public class LevelFactory {
     // Méthode utilitaire pour ajouter des objets au hasard dans les trous
     private static void addRandomItems(Level level, int count, String type) {
         for (int i = 0; i < count; i++) {
-            // On cherche une position aléatoire (simple)
-            double x = 60 + random.nextInt(680);
-            double y = 60 + random.nextInt(480);
-
-            // On évite le centre (Spawn)
-            if (Math.abs(x - 400) < 50 && Math.abs(y - 300) < 50)
+            // Taille standard des items ~20-30
+            double[] pos = findSafePosition(level, 30, 30, false);
+            if (pos == null)
                 continue;
+
+            double x = pos[0];
+            double y = pos[1];
 
             switch (type) {
                 case "TRAP" -> level.addItem(new TrapItem(x, y));
@@ -150,6 +153,28 @@ public class LevelFactory {
                 }
             }
         }
+    }
+
+    // Trouve une position x,y libre (pas dans un mur)
+    // farFromCenter : si true, force à être loin du spawn (pour ennemis/exit)
+    private static double[] findSafePosition(Level level, double w, double h, boolean farFromCenter) {
+        for (int attempts = 0; attempts < 100; attempts++) {
+            double x = 60 + random.nextInt(680); // Marge bords
+            double y = 60 + random.nextInt(480);
+
+            // Vérif distance centre (Spawn 400,300)
+            double dist = Math.sqrt(Math.pow(x - 400, 2) + Math.pow(y - 300, 2));
+            if (farFromCenter && dist < 200)
+                continue; // Trop près
+            if (!farFromCenter && dist < 50)
+                continue; // Évite pile sur le spawn
+
+            // Vérif Collision Murs
+            if (!level.checkCollisionRect(x, y, w, h)) {
+                return new double[] { x, y };
+            }
+        }
+        return null; // Pas trouvé
     }
 
     // ==========================================

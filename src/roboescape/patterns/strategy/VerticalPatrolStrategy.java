@@ -13,9 +13,25 @@ public class VerticalPatrolStrategy implements MovementStrategy {
 
     @Override
     public void move(Enemy enemy, double speed) {
-        enemy.setY(enemy.getY() + (speed * direction));
-        
-        if (enemy.getY() > bottomLimit) direction = -1;
-        if (enemy.getY() < topLimit) direction = 1;
+        double nextY = enemy.getY() + (speed * direction);
+
+        // 1. Check Level Collision (Walls)
+        if (enemy.getLevel() != null) {
+            boolean collision = enemy.getLevel().checkCollisionRect(
+                    enemy.getX(), nextY, enemy.getSize(), enemy.getSize());
+
+            if (collision) {
+                direction *= -1; // Bounce
+                return;
+            }
+        }
+
+        // 2. Check Patrol Limits
+        if (nextY > bottomLimit)
+            direction = -1;
+        if (nextY < topLimit)
+            direction = 1;
+
+        enemy.setY(nextY);
     }
 }
