@@ -205,7 +205,7 @@ public class LevelFactory {
                         if (r < 0.5)
                             level.addItem(new PowerUpItem(x, y, new SpeedBoost(), Color.ORANGE));
                         else
-                            level.addItem(new PowerUpItem(x, y, new InvincibilityBoost(), Color.GOLD));
+                            level.addItem(new PowerUpItem(x, y, new InvincibilityBoost(), Color.VIOLET));
                     }
                     case 'S' -> level.addEnemy(new Enemy(x, y, new VerticalPatrolStrategy(y - 50, y + 50)));
                     case 'H' -> level.addEnemy(new Enemy(x, y, new ChasePlayerStrategy(player)));

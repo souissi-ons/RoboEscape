@@ -37,7 +37,13 @@ public class InvincibilityBoost implements PowerUp {
 
     @Override
     public void update(Player player) {
-        // Restore health if player took damage during invincibility
+        // Ensure shield stays enabled while invincibility is active
+        // This prevents conflicts if another power-up (like ShieldBoost) expires
+        if (!expired) {
+            player.enableShield();
+        }
+
+        // Restore health if player took damage during invincibility (Fallback)
         if (player.getHealth() < healthSnapshot && !expired) {
             player.heal(healthSnapshot - player.getHealth());
         }
