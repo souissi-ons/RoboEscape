@@ -86,16 +86,38 @@ public class Player {
             gc.strokeOval(x - 5, y - 5, size + 10, size + 10);
         }
 
-        // 5. INVINCIBILITY GLOW (VIOLET)
+        // 5. PREMIUM INVINCIBILITY EFFECT (VIOLET)
         if (isInvincible()) {
-            double pulse = Math.sin(System.currentTimeMillis() / 150.0) * 0.4 + 0.6;
-            gc.setStroke(Color.VIOLET);
-            gc.setLineWidth(4);
-            gc.strokeOval(x - 8, y - 8, size + 16, size + 16);
+            double time = System.currentTimeMillis() / 1000.0;
+            double pulse = Math.sin(time * 5.0) * 0.2 + 0.8;
 
-            // Inner glow
-            gc.setFill(Color.rgb(238, 130, 238, pulse * 0.3)); // Light violet
-            gc.fillOval(x - 8, y - 8, size + 16, size + 16);
+            // Outer Glowing Aura
+            gc.setStroke(Color.VIOLET);
+            gc.setLineWidth(5 * pulse);
+            gc.strokeOval(x - 10, y - 10, size + 20, size + 20);
+
+            // Hexagonal "Energy" Shield Patterns (Simplified as lines)
+            gc.setStroke(Color.rgb(238, 130, 238, 0.4));
+            gc.setLineWidth(1);
+            for (int i = 0; i < 6; i++) {
+                double angle = i * Math.PI / 3 + time;
+                double r = (size / 2) + 12;
+                gc.strokeLine(x + size / 2, y + size / 2,
+                        x + size / 2 + Math.cos(angle) * r,
+                        y + size / 2 + Math.sin(angle) * r);
+            }
+
+            // Sparkles
+            for (int i = 0; i < 4; i++) {
+                double sparkX = x + (Math.sin(time * (2 + i)) * 20) + 18;
+                double sparkY = y + (Math.cos(time * (3 + i)) * 20) + 18;
+                gc.setFill(Color.WHITE);
+                gc.fillOval(sparkX, sparkY, 3, 3);
+            }
+
+            // Inner fill tint
+            gc.setFill(Color.rgb(238, 130, 238, 0.15));
+            gc.fillOval(x - 10, y - 10, size + 20, size + 20);
         }
     }
 

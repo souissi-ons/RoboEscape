@@ -157,7 +157,7 @@ public class LevelFactory {
                     else if (r < 0.66)
                         level.addItem(new PowerUpItem(x, y, new ShieldBoost(), Color.CYAN));
                     else
-                        level.addItem(new PowerUpItem(x, y, new InvincibilityBoost(), Color.GOLD));
+                        level.addItem(new PowerUpItem(x, y, new InvincibilityBoost(), Color.VIOLET));
                 }
             }
         }

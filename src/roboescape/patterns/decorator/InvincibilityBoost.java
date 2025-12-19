@@ -15,35 +15,19 @@ public class InvincibilityBoost implements PowerUp {
 
     private double duration = 4.0; // 4 seconds
     private boolean expired = false;
-    private boolean hadShield = false;
 
     public InvincibilityBoost() {
     }
 
     @Override
     public void apply(Player player) {
-        // Store current shield state
-        hadShield = player.hasShield();
-
-        // Enable shield for visual effect and protection
-        player.enableShield();
-
         PatternLogger.logDecoratorApplied("InvincibilityBoost(4s)", "Player");
     }
 
     @Override
     public void update(Player player) {
-        // Ensure shield stays enabled while invincibility is active
-        if (!expired) {
-            player.enableShield();
-        }
-
         duration -= 0.016; // ~60 fps
         if (duration <= 0 && !expired) {
-            // Only disable shield if player didn't have it before
-            if (!hadShield) {
-                player.disableShield();
-            }
             expired = true;
             PatternLogger.logDecoratorExpired("InvincibilityBoost");
         }

@@ -63,6 +63,6 @@ public class BatteryItem extends Item {
         p.heal(1); // +1 Vie
         p.addScore(50); // +50 Points
         this.active = false;
-        System.out.println("Batterie collectée ! PV : " + p.getHealth());
+        System.out.println("Batterie collectee ! PV : " + p.getHealth());
     }
 }

@@ -20,7 +20,7 @@ public class MenuState implements GameState {
 
     // Pour la navigation (0 = Jouer, 1 = Quitter)
     private int currentSelection = 0;
-    private final String[] options = { "COMMENCER LA MISSION", "QUITTER LE SYSTÈME" };
+    private final String[] options = { "COMMENCER LA MISSION", "QUITTER LE SYSTEME" };
 
     // Pour les effets visuels (Particules)
     private final List<Particle> particles = new ArrayList<>();
