@@ -1,18 +1,20 @@
 package roboescape.patterns.decorator;
 
 import roboescape.model.player.Player;
+import roboescape.patterns.util.PatternLogger;
 
 public class ShieldBoost implements PowerUp {
 
     private double duration = 5.0;
     private boolean expired = false;
 
-    public ShieldBoost() {}
+    public ShieldBoost() {
+    }
 
     @Override
     public void apply(Player player) {
         player.enableShield();
-        System.out.println("Shield activated !");
+        PatternLogger.logDecoratorApplied("ShieldBoost(5s)", "Player");
     }
 
     @Override
@@ -21,7 +23,7 @@ public class ShieldBoost implements PowerUp {
         if (duration <= 0 && !expired) {
             player.disableShield();
             expired = true;
-            System.out.println("Shield expired.");
+            PatternLogger.logDecoratorExpired("ShieldBoost");
         }
     }
 

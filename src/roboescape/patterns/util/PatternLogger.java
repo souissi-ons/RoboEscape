@@ -96,6 +96,18 @@ public class PatternLogger {
         log("COMMAND", "%s executed", commandName);
     }
 
+    // ========== STRATEGY PATTERN ==========
+
+    /**
+     * Logs strategy execution (Strategy Pattern)
+     * 
+     * @param strategyName Name of the strategy being executed
+     * @param target       Target object using the strategy
+     */
+    public static void logStrategyExecution(String strategyName, String target) {
+        log("STRATEGY", "%s executing on %s", strategyName, target);
+    }
+
     // ========== INTERNAL ==========
 
     private static void log(String pattern, String format, Object... args) {
