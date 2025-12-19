@@ -11,8 +11,10 @@ import roboescape.model.items.TrapItem;
 import roboescape.patterns.composite.Exit;
 import roboescape.patterns.composite.Level;
 import roboescape.patterns.composite.Wall;
+import roboescape.patterns.decorator.InvincibilityBoost;
 import roboescape.patterns.decorator.ShieldBoost;
 import roboescape.patterns.decorator.SpeedBoost;
+import roboescape.patterns.strategy.ChasePlayerStrategy;
 import roboescape.patterns.strategy.HorizontalPatrolStrategy;
 import roboescape.patterns.strategy.RandomMovementStrategy;
 import roboescape.patterns.strategy.VerticalPatrolStrategy;
@@ -27,7 +29,7 @@ public class LevelFactory {
     // Générateur de nombres aléatoires
     private static final Random random = new Random();
 
-    public static Level createLevel(int levelNumber) {
+    public static Level createLevel(int levelNumber, roboescape.model.player.Player player) {
         PatternLogger.logFactoryCreation("LevelFactory", "Level " + levelNumber);
         Level level = new Level();
 
@@ -39,17 +41,17 @@ public class LevelFactory {
 
         // Si c'est le niveau 1, on charge le tuto facile (carte fixe)
         if (levelNumber == 1) {
-            return loadFromMap(level, LEVEL_1_MAP);
+            return loadFromMap(level, LEVEL_1_MAP, player);
         }
 
         // SINON : GÉNÉRATION AUTOMATIQUE (Niveau 2 à Infini)
-        return generateProceduralLevel(level, levelNumber);
+        return generateProceduralLevel(level, levelNumber, player);
     }
 
     // ==========================================
     // ALGORITHME DE GÉNÉRATION PROCÉDURALE
     // ==========================================
-    private static Level generateProceduralLevel(Level level, int difficulty) {
+    private static Level generateProceduralLevel(Level level, int difficulty, roboescape.model.player.Player player) {
         System.out.println("Génération du niveau " + difficulty + "...");
 
         // 1. CALCUL DE LA DIFFICULTÉ
@@ -109,7 +111,10 @@ public class LevelFactory {
 
             Enemy enemy;
             // Choix du type d'ennemi selon la difficulté
-            if (difficulty >= 5 && random.nextBoolean()) {
+            if (difficulty >= 6 && random.nextDouble() < 0.3) {
+                // Niveau 6+ : Parfois des Traqueurs (Strategy Chase)
+                enemy = new Enemy(ex, ey, new ChasePlayerStrategy(player));
+            } else if (difficulty >= 5 && random.nextBoolean()) {
                 // Niveau 5+ : Parfois des Scies
                 enemy = new BladeEnemy(ex, ey, new HorizontalPatrolStrategy(ex - 50, ex + 50));
             } else if (difficulty >= 8 && random.nextBoolean()) {
@@ -146,10 +151,13 @@ public class LevelFactory {
                 case "COIN" -> level.addItem(new CoinItem(x, y));
                 case "HEAL" -> level.addItem(new BatteryItem(x, y));
                 case "POWERUP" -> {
-                    if (random.nextBoolean())
+                    double r = random.nextDouble();
+                    if (r < 0.33)
                         level.addItem(new PowerUpItem(x, y, new SpeedBoost(), Color.ORANGE));
-                    else
+                    else if (r < 0.66)
                         level.addItem(new PowerUpItem(x, y, new ShieldBoost(), Color.CYAN));
+                    else
+                        level.addItem(new PowerUpItem(x, y, new InvincibilityBoost(), Color.GOLD));
                 }
             }
         }
@@ -180,7 +188,7 @@ public class LevelFactory {
     // ==========================================
     // PARSER MAP (Pour le Niveau 1 Fixe)
     // ==========================================
-    private static Level loadFromMap(Level level, String[] mapData) {
+    private static Level loadFromMap(Level level, String[] mapData, roboescape.model.player.Player player) {
         for (int row = 0; row < mapData.length; row++) {
             String line = mapData[row];
             for (int col = 0; col < line.length(); col++) {
@@ -192,8 +200,15 @@ public class LevelFactory {
                     case '#' -> level.addWall(new Wall(x, y, TILE_SIZE, TILE_SIZE));
                     case 'E' -> level.setExit(new Exit(x, y, TILE_SIZE));
                     case 'C' -> level.addItem(new CoinItem(x + 10, y + 10));
-                    case 'P' -> level.addItem(new PowerUpItem(x, y, new SpeedBoost(), Color.ORANGE));
+                    case 'P' -> {
+                        double r = random.nextDouble();
+                        if (r < 0.5)
+                            level.addItem(new PowerUpItem(x, y, new SpeedBoost(), Color.ORANGE));
+                        else
+                            level.addItem(new PowerUpItem(x, y, new InvincibilityBoost(), Color.GOLD));
+                    }
                     case 'S' -> level.addEnemy(new Enemy(x, y, new VerticalPatrolStrategy(y - 50, y + 50)));
+                    case 'H' -> level.addEnemy(new Enemy(x, y, new ChasePlayerStrategy(player)));
                 }
             }
         }

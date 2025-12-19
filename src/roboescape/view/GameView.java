@@ -48,6 +48,8 @@ public class GameView extends StackPane implements GameObserver {
 
         // Initialisation des états
         this.playingState = new PlayingState(this);
+        this.level = LevelFactory.createLevel(currentLevelIndex, player);
+        this.controller.setLevel(level);
         this.currentState = new MenuState(this); // On commence par le MENU
 
         startGameLoop();
@@ -96,7 +98,7 @@ public class GameView extends StackPane implements GameObserver {
     // --- LOGIQUE DE JEU GLOBALE ---
     public void loadNextLevel() {
         currentLevelIndex++;
-        Level newLevel = LevelFactory.createLevel(currentLevelIndex);
+        Level newLevel = LevelFactory.createLevel(currentLevelIndex, player);
         if (newLevel != null) {
             this.level = newLevel;
             controller.setLevel(level);
@@ -246,7 +248,7 @@ public class GameView extends StackPane implements GameObserver {
     public void restartGame() {
         currentLevelIndex = 1;
         player.resetToInitialState();
-        this.level = LevelFactory.createLevel(currentLevelIndex);
+        this.level = LevelFactory.createLevel(currentLevelIndex, player);
         controller.setLevel(level);
         setState(playingState);
     }
