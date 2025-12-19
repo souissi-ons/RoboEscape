@@ -16,7 +16,6 @@ public class InvincibilityBoost implements PowerUp {
     private double duration = 4.0; // 4 seconds
     private boolean expired = false;
     private boolean hadShield = false;
-    private int healthSnapshot = 0;
 
     public InvincibilityBoost() {
     }
@@ -25,9 +24,6 @@ public class InvincibilityBoost implements PowerUp {
     public void apply(Player player) {
         // Store current shield state
         hadShield = player.hasShield();
-
-        // Store current health to restore if damaged during invincibility
-        healthSnapshot = player.getHealth();
 
         // Enable shield for visual effect and protection
         player.enableShield();
@@ -38,14 +34,8 @@ public class InvincibilityBoost implements PowerUp {
     @Override
     public void update(Player player) {
         // Ensure shield stays enabled while invincibility is active
-        // This prevents conflicts if another power-up (like ShieldBoost) expires
         if (!expired) {
             player.enableShield();
-        }
-
-        // Restore health if player took damage during invincibility (Fallback)
-        if (player.getHealth() < healthSnapshot && !expired) {
-            player.heal(healthSnapshot - player.getHealth());
         }
 
         duration -= 0.016; // ~60 fps

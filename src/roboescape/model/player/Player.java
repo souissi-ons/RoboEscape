@@ -85,6 +85,18 @@ public class Player {
             gc.setLineWidth(3);
             gc.strokeOval(x - 5, y - 5, size + 10, size + 10);
         }
+
+        // 5. INVINCIBILITY GLOW (VIOLET)
+        if (isInvincible()) {
+            double pulse = Math.sin(System.currentTimeMillis() / 150.0) * 0.4 + 0.6;
+            gc.setStroke(Color.VIOLET);
+            gc.setLineWidth(4);
+            gc.strokeOval(x - 8, y - 8, size + 16, size + 16);
+
+            // Inner glow
+            gc.setFill(Color.rgb(238, 130, 238, pulse * 0.3)); // Light violet
+            gc.fillOval(x - 8, y - 8, size + 16, size + 16);
+        }
     }
 
     public void update(double width, double height) {
@@ -127,6 +139,15 @@ public class Player {
         return health > 0;
     }
 
+    /**
+     * Checks if the player is currently invincible (via InvincibilityBoost)
+     * 
+     * @return true if invincible
+     */
+    public boolean isInvincible() {
+        return powerUps.stream().anyMatch(p -> p.getClass().getSimpleName().equals("InvincibilityBoost"));
+    }
+
     public boolean hasWon() {
         return won;
     }
@@ -136,7 +157,7 @@ public class Player {
     }
 
     public void takeDamage(int amount) {
-        if (invulnerable)
+        if (invulnerable || isInvincible())
             return;
         this.health -= amount;
         this.invulnerable = true;
