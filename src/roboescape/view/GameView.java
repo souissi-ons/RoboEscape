@@ -184,11 +184,18 @@ public class GameView extends StackPane implements GameObserver {
         // --- 4. SPEED & SHIELD ---
         double bottomY = y + 75;
 
-        // SHIELD (Indicateur gauche)
+        // SHIELD (Enhanced with animation)
         if (player.hasShield()) {
-            gc.setFill(Color.CYAN);
-            gc.setEffect(null); // Pas d'effet lourd, juste couleur
+            // Animated pulsing effect for shield
+            double pulse = Math.sin(System.currentTimeMillis() / 200.0) * 0.3 + 0.7;
+            gc.setFill(Color.rgb(0, 255, 255, pulse));
             gc.fillOval(x + 15, bottomY - 6, 8, 8);
+
+            // Outer glow ring
+            gc.setStroke(Color.rgb(0, 255, 255, pulse * 0.5));
+            gc.setLineWidth(2);
+            gc.strokeOval(x + 13, bottomY - 8, 12, 12);
+
             gc.setFill(Color.CYAN);
             gc.setFont(Font.font("Arial", FontWeight.BOLD, 11));
             gc.fillText("SHIELD", x + 28, bottomY + 2);
@@ -200,23 +207,38 @@ public class GameView extends StackPane implements GameObserver {
             gc.fillText("NO SHIELD", x + 28, bottomY + 2);
         }
 
-        // SPEED (Barre à droite)
+        // SPEED (Enhanced bar with color coding)
         double currentSpeed = player.getSpeed();
-        double maxSpeedDef = 1000.0; // Vitesse max arbitraire pour la jauge
+        double baseSpeed = 400.0; // Normal speed
+        double maxSpeedDef = 1000.0; // Max speed for gauge
         double speedRatio = Math.min(currentSpeed / maxSpeedDef, 1.0);
         double barW = 60;
         double barH = 4;
         double barX = x + cardW - barW - 15;
 
         gc.setFill(Color.GRAY);
-        gc.fillRect(barX, bottomY - 2, barW, barH); // Fond de barre
+        gc.fillRect(barX, bottomY - 2, barW, barH); // Background bar
 
-        gc.setFill(Color.WHITE);
-        gc.fillRect(barX, bottomY - 2, barW * speedRatio, barH); // Barre active
+        // Color-coded speed bar (Green = normal, Yellow = boosted)
+        if (currentSpeed > baseSpeed) {
+            // Speed boost active - yellow/gold
+            gc.setFill(Color.GOLD);
+        } else {
+            // Normal speed - white
+            gc.setFill(Color.WHITE);
+        }
+        gc.fillRect(barX, bottomY - 2, barW * speedRatio, barH); // Active bar
 
         gc.setFill(Color.rgb(200, 200, 200, 0.8));
         gc.setFont(Font.font("Arial", 9));
         gc.fillText("SPD", barX - 22, bottomY + 3);
+
+        // Speed boost indicator
+        if (currentSpeed > baseSpeed) {
+            gc.setFill(Color.GOLD);
+            gc.setFont(Font.font("Arial", FontWeight.BOLD, 8));
+            gc.fillText("↑", barX + barW + 3, bottomY + 3);
+        }
 
         gc.restore();
     }
