@@ -71,4 +71,3 @@ Patterns et la maintenabilité du code, conformément aux exigences du module.
 - **Espace** : Action / Saut
 - **Échap** : Pause du jeu (retour au Menu)
 
-## Structure du Projet
